@@ -1,0 +1,650 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Onboarding</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+      background: #fff;
+      color: #222;
+    }
+    .onboarding-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .onboarding-left {
+      flex: 1.2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-end;
+      padding-right: 2vw;
+      background: #fff;
+    }
+    .onboarding-content {
+      max-width: 420px;
+      margin-left: 12px;
+    }
+    .onboarding-step {
+      font-size: 0.95rem;
+      color: #888;
+      margin-bottom: 1.2rem;
+      letter-spacing: 0.04em;
+    }
+    .onboarding-title { 
+      font-size: 2.1rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+    .onboarding-desc {
+      color: #bbb;
+      font-size: 1.15rem;
+      margin-bottom: 2.2rem;
+      font-weight: 400;
+    }
+    .onboarding-progress {
+      width: 60px;
+      height: 3px;
+      background: #222;
+      margin-bottom: 2.5rem;
+      border-radius: 2px;
+    }
+    .onboarding-card {
+      flex: 1.5;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      background: #fff;
+      position: relative;
+    }
+    .onboarding-card-inner {
+      background: #fff;
+      box-shadow: none;
+      border-radius: 8px;
+      padding: 0;
+      width: 400px;
+      margin-left: 0;
+      margin-right: auto;
+      margin-top: 0;
+      margin-bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .onboarding-search-bar {
+      display: flex;
+      align-items: center;
+      background: #f5f5f5;
+      border-radius: 4px 4px 0 0;
+      border-bottom: 1px solid #ccc;
+      padding: 0 18px;
+      height: 54px;
+    }
+    .onboarding-search-bar input {
+      border: none;
+      background: transparent;
+      font-size: 1.1rem;
+      flex: 1;
+      outline: none;
+      padding: 12px 0;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .onboarding-search-bar input:focus {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .onboarding-search-bar svg {
+      margin-right: 10px;
+      color: #aaa;
+    }
+    .onboarding-topic-list {
+      max-height: 260px;
+      overflow-y: auto;
+      background: #fff;
+      border-radius: 0 0 8px 8px;
+      box-shadow: none;
+      padding: 0;
+      margin: 0;
+      border-top: none;
+    }
+    .onboarding-topic-list-title {
+      font-weight: 600;
+      padding: 18px 24px 8px 24px;
+      color: #444;
+      font-size: 1.05rem;
+    }
+    .onboarding-topic {
+      padding: 10px 24px;
+      cursor: pointer;
+      color: #222;
+      font-size: 1.13rem;
+      transition: background 0.15s;
+    }
+    .onboarding-topic:hover {
+      background: #f0f0f0;
+    }
+    .onboarding-right {
+      flex: 1;
+      background: url('{% static 'app/abc.jpg' %}') center/cover no-repeat;
+      min-width: 320px;
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+    }
+    .onboarding-next-btn {
+      position: fixed;
+      right: 3vw;
+      bottom: 2.5vw;
+      background: #111;
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 16px 38px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    }
+    .onboarding-answer-response {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+      transition: opacity 0.4s cubic-bezier(.4,0,.2,1), transform 0.4s cubic-bezier(.4,0,.2,1);
+      background: #fff;
+      box-shadow: 0 6px 32px rgba(0,0,0,0.13), 0 1.5px 6px rgba(0,0,0,0.07);
+      border-radius: 10px;
+      margin: 18px 0 0 0;
+      padding: 24px 28px 18px 28px;
+      min-height: 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      pointer-events: none;
+    }
+    .onboarding-answer-response.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+    .onboarding-answer-response:hover {
+      box-shadow: 0 10px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
+      transform: translateY(-2px) scale(1.02);
+    }
+    .onboarding-answer-text {
+      font-size: 1.13rem;
+      color: #333;
+      margin-bottom: 10px;
+      transition: color 0.2s;
+    }
+    .onboarding-next-animated-btn {
+      margin-top: 0;
+      background: linear-gradient(90deg, #222 60%, #444 100%);
+      color: #fff;
+      font-size: 1.08rem;
+      font-weight: 600;
+      padding: 12px 32px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+      transition: background 0.2s, transform 0.18s, box-shadow 0.18s;
+      outline: none;
+      display: block;
+    }
+    .onboarding-next-animated-btn:hover {
+      background: linear-gradient(90deg, #333 60%, #555 100%);
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.16);
+    }
+    .onboarding-next-animated-btn:active {
+      background: #111;
+      transform: scale(0.98);
+    }
+    .onboarding-animated-answer-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      margin-top: 36px;
+      opacity: 0;
+      transform: translateY(30px) scale(0.98);
+      animation: fadeInUp 0.7s cubic-bezier(.4,0,.2,1) 0.2s forwards;
+      gap: 18px;
+    }
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .super-animated-input {
+      font-size: 1.25rem;
+      padding: 18px 24px;
+      border-radius: 8px;
+      border: 2px solid #e0e0e0;
+      outline: none;
+      background: transparent;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      transition: border 0.25s, box-shadow 0.25s, transform 0.18s;
+      width: 340px;
+      max-width: 100%;
+    }
+    .super-animated-input:focus {
+      border: 2px solid #4f8cff;
+      box-shadow: 0 8px 32px rgba(79,140,255,0.18), 0 2px 8px rgba(0,0,0,0.10);
+      transform: scale(1.03);
+    }
+    .super-animated-input:hover {
+      border: 2px solid #b3d1ff;
+      box-shadow: 0 6px 28px rgba(79,140,255,0.13);
+      transform: scale(1.02);
+    }
+    .super-animated-next-btn {
+      font-size: 1.13rem;
+      font-weight: 600;
+      padding: 16px 36px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(90deg, #4f8cff 60%, #003366 100%);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(79,140,255,0.13);
+      cursor: pointer;
+      transition: background 0.22s, box-shadow 0.18s, transform 0.18s, opacity 0.18s;
+      outline: none;
+      margin-left: 0;
+      opacity: 0.85;
+    }
+    .super-animated-next-btn:enabled:hover {
+      background: linear-gradient(90deg, #003366 60%, #4f8cff 100%);
+      box-shadow: 0 8px 32px rgba(79,140,255,0.22);
+      transform: scale(1.06);
+      opacity: 1;
+    }
+    .super-animated-next-btn:enabled:active {
+      background: #003366;
+      transform: scale(0.98);
+      opacity: 0.92;
+    }
+    .super-animated-next-btn:disabled {
+      background: #e0e0e0;
+      color: #aaa;
+      cursor: not-allowed;
+      opacity: 0.6;
+      box-shadow: none;
+    }
+    @media (max-width: 900px) {
+      .onboarding-container { flex-direction: column; }
+      .onboarding-right { display: none; }
+      .onboarding-left, .onboarding-card { justify-content: center; align-items: center; }
+      .onboarding-content, .onboarding-card-inner { margin: 0 auto; }
+      .onboarding-next-btn { position: static; width: 100%; margin-top: 2rem; }
+    }
+    /* Page-wide fade/slide-in animation */
+    .animated-fadein {
+      opacity: 0;
+      transform: translateY(30px) scale(0.98);
+      animation: fadeInUp 0.7s cubic-bezier(.4,0,.2,1) forwards;
+    }
+    .animated-fadein[style*="animation-delay"] {
+      animation-delay: 0.5s;
+    }
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .onboarding-title, .onboarding-desc, .onboarding-step, .onboarding-progress {
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 0.7s cubic-bezier(.4,0,.2,1) forwards;
+    }
+    .onboarding-step { animation-delay: 0.1s; }
+    .onboarding-title { animation-delay: 0.2s; }
+    .onboarding-desc { animation-delay: 0.3s; }
+    .onboarding-progress { animation-delay: 0.4s; }
+    .arrow-slight {
+      font-size: 0.95em;
+      color: #222;
+      margin: 0 4px 0 2px;
+      font-weight: 400;
+      position: relative;
+      bottom: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="onboarding-container">
+    <div class="onboarding-left">
+      <div class="onboarding-content">
+        <div class="onboarding-step" id="onboardingStep">STEP 1 OF 2</div>
+        <div class="onboarding-title">Your First Step To Success</div>
+        <div class="onboarding-desc">Tell us about your project so we can build the perfect website for you.</div>
+        <div class="onboarding-progress"></div>
+      </div>
+    </div>
+    <div class="onboarding-card">
+      <div class="onboarding-card-inner">
+        <!-- New animated answer input area -->
+        <div class="custom-onboarding-form animated-fadein" id="customOnboardingForm" style="animation-delay: 0.5s;">
+          <div class="custom-question" id="customQuestion">1<span class="arrow-slight">➜</span> <span>What do you want us to achieve for you?</span></div>
+          <input class="custom-input" id="customInput" type="text" placeholder="Type your answer here..." />
+          <div class="custom-btn-row">
+            <button class="custom-ok-btn" id="customNextBtn">NEXT</button>
+            <button class="custom-return-btn" id="customReturnBtn" style="display:none;">RETURN</button>
+          </div>
+        </div>
+        <style>
+        .custom-onboarding-form {
+          width: 100%;
+          max-width: 400px;
+          margin: 40px auto 0 auto;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          background: #fff;
+        }
+        .custom-question {
+          font-size: 1.15rem;
+          margin-bottom: 18px;
+          color: #222;
+          font-weight: 500;
+        }
+        .custom-input {
+          width: 100%;
+          font-size: 1.3rem;
+          border: none;
+          border-bottom: 2px solid #111;
+          outline: none;
+          padding: 10px 0;
+          margin-bottom: 32px;
+          background: transparent;
+          color: #222;
+          transition: border-color 0.2s;
+        }
+        .custom-input:focus {
+          border-bottom: 2.5px solid #111;
+        }
+        .custom-input::placeholder {
+          color: #111;
+          opacity: 1;
+        }
+        .custom-ok-btn {
+          width: auto;
+          min-width: 60px;
+          align-self: flex-end;
+          padding: 10px 20px;
+          background: #fff;
+          color: #111;
+          font-size: 1.15rem;
+          font-family: inherit;
+          font-weight: 500;
+          border: 2px solid #111;
+          border-radius: 0;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          transition: background 0.22s, color 0.22s, box-shadow 0.18s, transform 0.18s, opacity 0.3s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          letter-spacing: 0.04em;
+        }
+        .custom-ok-btn:hover, .custom-ok-btn:active {
+          background: #111;
+          color: #fff;
+          box-shadow: 0 4px 16px rgba(34,34,34,0.13);
+          transform: translateY(-2px) scale(1.04);
+        }
+        .custom-btn-row {
+          width: 100%;
+          display: flex;
+          flex-direction: row;
+          gap: 12px;
+          justify-content: flex-end;
+        }
+        .custom-return-btn {
+          width: auto;
+          min-width: 60px;
+          padding: 10px 20px;
+          background: #fff;
+          color: #111;
+          font-size: 1.15rem;
+          font-family: inherit;
+          font-weight: 500;
+          border: 2px solid #111;
+          border-radius: 0;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          transition: background 0.22s, color 0.22s, box-shadow 0.18s, transform 0.18s, opacity 0.3s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          letter-spacing: 0.04em;
+        }
+        .custom-return-btn:hover, .custom-return-btn:active {
+          background: #111;
+          color: #fff;
+          box-shadow: 0 4px 16px rgba(34,34,34,0.13);
+          transform: translateY(-2px) scale(1.04);
+        }
+        /* Slide/fade animation for step transitions */
+        .fade-left-out {
+          animation: fadeLeftOut 0.12s cubic-bezier(.4,0,.2,1) forwards;
+        }
+        .fade-left-in {
+          animation: fadeLeftIn 0.18s cubic-bezier(.4,0,.2,1) forwards;
+        }
+        .fade-right-out {
+          animation: fadeRightOut 0.12s cubic-bezier(.4,0,.2,1) forwards;
+        }
+        .fade-right-in {
+          animation: fadeRightIn 0.18s cubic-bezier(.4,0,.2,1) forwards;
+        }
+        @keyframes fadeLeftOut {
+          to { opacity: 0; transform: translateX(-30px); }
+        }
+        @keyframes fadeLeftIn {
+          from { opacity: 0; transform: translateX(30px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeRightOut {
+          to { opacity: 0; transform: translateX(30px); }
+        }
+        @keyframes fadeRightIn {
+          from { opacity: 0; transform: translateX(-30px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        /* Animation for form fade out/in */
+        .fade-out {
+          opacity: 0;
+          transition: opacity 0.4s cubic-bezier(.4,0,.2,1);
+        }
+        .fade-in {
+          opacity: 1;
+          transition: opacity 0.4s cubic-bezier(.4,0,.2,1);
+        }
+        </style>
+      </div>
+    </div>
+    <div class="onboarding-right" style="background: url('{% static 'app/abc.jpg' %}') center/cover no-repeat; min-width: 320px; position: relative; display: flex; align-items: flex-start; justify-content: flex-end;">
+      <!-- Optional: Add overlay text or logo here -->
+    </div>
+  </div>
+  <!-- Removed right-end NEXT button -->
+  <script>
+    // Only keep answers if this is a reload, otherwise clear
+    if (performance.navigation.type !== performance.navigation.TYPE_RELOAD) {
+      localStorage.removeItem('onboarding_step');
+      localStorage.removeItem('onboarding_answer1');
+      localStorage.removeItem('onboarding_answer2');
+    }
+    // Step transition logic for onboarding form with slide/fade and return
+    const onboardingStep = document.getElementById('onboardingStep');
+    const customOnboardingForm = document.getElementById('customOnboardingForm');
+    const customQuestion = document.getElementById('customQuestion');
+    const customInput = document.getElementById('customInput');
+    const customNextBtn = document.getElementById('customNextBtn');
+    const customReturnBtn = document.getElementById('customReturnBtn');
+    
+    // Load from localStorage
+    let step = parseInt(localStorage.getItem('onboarding_step')) || 1;
+    let answer1 = localStorage.getItem('onboarding_answer1') || '';
+    let answer2 = localStorage.getItem('onboarding_answer2') || '';
+    
+    // Save to localStorage
+    function saveToStorage() {
+      localStorage.setItem('onboarding_step', step);
+      localStorage.setItem('onboarding_answer1', answer1);
+      localStorage.setItem('onboarding_answer2', answer2);
+    }
+    
+    // Initialize form based on saved step
+    function initializeForm() {
+      if (step === 1) {
+        onboardingStep.textContent = 'STEP 1 OF 2';
+        customQuestion.innerHTML = '1<span class="arrow-slight">➜</span> <span>What do you want us to achieve for you?</span>';
+        customInput.value = answer1;
+        customReturnBtn.style.display = 'none';
+      } else if (step === 2) {
+        onboardingStep.textContent = 'STEP 2 OF 2';
+        customQuestion.innerHTML = '2<span class="arrow-slight">➜</span> <span>How did you hear about us?</span>';
+        customInput.value = answer2;
+        customReturnBtn.style.display = 'inline-flex';
+      }
+    }
+
+    function goToStep2() {
+      // Save current answer before transitioning
+      answer1 = customInput.value;
+      step = 2;
+      saveToStorage();
+      
+      customOnboardingForm.classList.remove('fade-right-in', 'fade-left-in', 'fade-in', 'fade-out', 'fade-right-out');
+      customOnboardingForm.classList.add('fade-left-out');
+      setTimeout(() => {
+        onboardingStep.textContent = 'STEP 2 OF 2';
+        customQuestion.innerHTML = '2<span class="arrow-slight">➜</span> <span>How did you hear about us?</span>';
+        customInput.value = answer2; // Restore previous answer for step 2
+        customInput.placeholder = 'Type your answer here...';
+        customReturnBtn.style.display = 'inline-flex';
+        customOnboardingForm.classList.remove('fade-left-out');
+        customOnboardingForm.classList.add('fade-left-in');
+        setTimeout(() => {
+          customOnboardingForm.classList.remove('fade-left-in');
+        }, 10);
+      }, 10);
+    }
+
+    function goToStep1() {
+      // Save current answer before transitioning
+      answer2 = customInput.value;
+      step = 1;
+      saveToStorage();
+      
+      customOnboardingForm.classList.remove('fade-right-in', 'fade-left-in', 'fade-in', 'fade-out', 'fade-left-out');
+      customOnboardingForm.classList.add('fade-right-out');
+      setTimeout(() => {
+        onboardingStep.textContent = 'STEP 1 OF 2';
+        customQuestion.innerHTML = '1<span class="arrow-slight">➜</span> <span>What do you want us to achieve for you?</span>';
+        customInput.value = answer1; // Restore previous answer for step 1
+        customInput.placeholder = 'Type your answer here...';
+        customReturnBtn.style.display = 'none';
+        customOnboardingForm.classList.remove('fade-right-out');
+        customOnboardingForm.classList.add('fade-right-in');
+        setTimeout(() => {
+          customOnboardingForm.classList.remove('fade-right-in');
+        }, 10);
+      }, 10);
+    }
+
+    customNextBtn.addEventListener('click', function(e) {
+      if (step === 1) {
+        step = 2;
+        goToStep2();
+      } else if (step === 2) {
+        answer2 = customInput.value; // Save final answer
+        saveToStorage(); // Save to localStorage one last time
+        // Send answers to backend
+        fetch('/onboarding/submit/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({ answer1, answer2 })
+        })
+        .then(res => {
+          if (res.ok) window.location.href = '/main';
+          else alert('Failed to save answers.');
+        });
+      }
+    });
+    customInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (step === 1) {
+          step = 2;
+          goToStep2();
+        } else if (step === 2) {
+          answer2 = customInput.value; // Save final answer
+          // Send answers to backend
+          fetch('/onboarding/submit/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ answer1, answer2 })
+          })
+                  .then(res => {
+          if (res.ok) window.location.href = '/main';
+          else alert('Failed to save answers.');
+        });
+        }
+      }
+    });
+    customReturnBtn.addEventListener('click', function(e) {
+      if (step === 2) {
+        goToStep1();
+      }
+    });
+    
+    // Save to localStorage as user types
+    customInput.addEventListener('input', function(e) {
+      if (step === 1) {
+        answer1 = customInput.value;
+      } else if (step === 2) {
+        answer2 = customInput.value;
+      }
+      saveToStorage();
+    });
+    
+    // Initialize form on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeForm();
+    });
+    
+    // Helper to get CSRF token
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  </script>
+</body>
+</html> 

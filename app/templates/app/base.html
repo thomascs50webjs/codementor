@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>{% block title %}LIVE CODITOR{% endblock %}</title>
+    
+    <!-- ✅ SEO Description -->
+    <meta name="description" content="{% block description %} LIVE CODITOR. A professional code editor & development platform.{% endblock %}">
+  
+    <!-- ✅ Mobile-friendly -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <!-- ✅ Social Media (OpenGraph for Facebook, LinkedIn) -->
+    <meta property="og:title" content="{% block og_title %}LIVE CODITOR{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Default description for LIVE CODITOR platform.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'app/LIVECODITOR.JPG' %}{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  
+    <!-- ✅ Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}LIVE CODITOR{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Default description for LIVE CODITOR platform.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{% static 'app/LIVECODITOR.JPG' %}{% endblock %}">
+  
+    <!-- ✅ Favicon -->
+    <link rel="icon" href="{% static 'app/LIVECODITOR.JPG' %}" type="image/png">
+    <link rel="shortcut icon" href="{% static 'app/lc.png' %}" type="image/png">
+  
+    <!-- ✅ Styles & Fonts -->
+    <link rel="stylesheet" href="{% static 'app/styles.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+<body>
+  <div class="body">
+    {% block body %}
+    {% endblock %}
+  </div>
+
+
+</body>
+</html>

@@ -1,0 +1,3557 @@
+{% extends "app/base.html" %}
+{% block title %}Create - STUDIO{% endblock %}
+
+{% block body %}
+{% load socialaccount %}
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.cp-main-container {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
+/* Navigation Header */
+.nav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.nav-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 2;
+}
+
+.nav-right {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex: 1;
+  justify-content: flex-end;
+}
+.nav-logo {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111;
+  text-decoration: none;
+  margin-right: 1rem;
+}
+
+.nav-title-input {
+  border: none;
+  background: transparent;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111;
+  padding: 0.5rem 0;
+  outline: none;
+  min-width: 300px;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.nav-title-input:focus {
+  border-bottom-color: #007bff;
+}
+
+.nav-title-input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+.nav-right {
+  display: flex;
+  gap: 1.5rem;
+}
+.nav-link {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  color: #666;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-link:hover {
+  color: #111;
+}
+
+
+/* Layout with code section filling all space and preview overlay */
+.editor-container {
+  position: relative;
+  height: calc(100vh - 80px); /* Subtract nav header height */
+  background: #fff;
+  margin: 0;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.editor-container.full-height {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100vh;
+  z-index: 1000;
+  border-radius: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.code-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+}
+
+.code-tabs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #000;
+  border-bottom: 1px solid #333;
+}
+
+.code-tabs-left {
+  display: flex;
+}
+
+.code-tabs-right {
+  display: flex;
+  align-items: center;
+}
+
+.code-tab {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  color: #999;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.code-tab.active {
+  color: #fff;
+  border-bottom-color: #1976d2;
+  background: #000;
+}
+
+.code-tab:hover:not(.active) {
+  color: #fff;
+  background: #1a1a1a;
+}
+
+/* Add Python PRO tab styling like in the image */
+.code-tab.pro-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.small-pro-badge {
+  background: #ffd700;
+  color: #000;
+  font-size: 0.5rem;
+  font-weight: 700;
+  padding: 0.05rem 0.2rem;
+  border-radius: 1px;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  margin-left: 0.3rem;
+  margin-top: -0.2rem;
+}
+
+.code-editor {
+  flex: 1;
+  padding: 1rem;
+  background: #1e1e1e;
+  height: 50vh;
+  overflow: hidden;
+}
+
+.code-editor-container {
+  display: flex;
+  height: 100%;
+  position: relative;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.line-numbers {
+  width: 50px;
+  min-width: 50px;
+  background: #1e1e1e;
+  color: #858585;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding: 1rem 0.5rem 1rem 1rem;
+  
+  text-align: right;
+  user-select: none;
+  overflow-y: hidden;
+  flex-shrink: 0;
+}
+
+
+
+.line-numbers .line-number {
+  display: block;
+  height: 1.5em;
+  padding-right: 0.5rem;
+}
+
+
+
+.code-textarea {
+  flex: 1;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: none;
+  background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+  padding: 1rem;
+  tab-size: 2;
+  caret-color: #d4d4d4;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
+  max-width: 100%;
+  box-sizing: border-box;
+  max-width: calc(50vw - 100px);
+}
+
+/* Custom scrollbar for code editors - Cursor AI style */
+.code-textarea::-webkit-scrollbar {
+  width: 8px;
+}
+
+.code-textarea::-webkit-scrollbar-track {
+  background: #2d2d2d;
+  border-radius: 4px;
+}
+
+.code-textarea::-webkit-scrollbar-thumb {
+  background: #4c4c4c;
+  border-radius: 4px;
+  border: 1px solid #2d2d2d;
+}
+
+.code-textarea::-webkit-scrollbar-thumb:hover {
+  background: #5c5c5c;
+}
+
+.code-textarea::-webkit-scrollbar-corner {
+  background: #2d2d2d;
+}
+
+.preview-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 102%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-left: 1px solid #333;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  background: #000000;
+  border-bottom: 2px solid #1f2937;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  flex: 1;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.preview-btn {
+  background: transparent;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-left: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.preview-btn:hover {
+  color: #ffffff;
+}
+
+.preview-btn.primary {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #000000;
+  font-weight: 700;
+  padding: 8px 16px;
+}
+
+.preview-btn.primary:hover {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.preview-btn-icon {
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-btn-icon:hover {
+  color: #ccc;
+}
+
+.fullscreen-icon-btn {
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+.fullscreen-icon-btn:hover {
+  color: #ccc;
+}
+
+/* Code Fullscreen Modal */
+.code-fullscreen-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #1e1e1e;
+  z-index: 9999;
+  display: none;
+  flex-direction: column;
+}
+
+.code-fullscreen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #000;
+  border-bottom: 1px solid #333;
+}
+
+.code-fullscreen-tabs {
+  display: flex;
+  gap: 0;
+}
+
+.code-fullscreen-tab {
+  padding: 0.8rem 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  color: #999;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.code-fullscreen-tab.active {
+  color: #fff;
+  border-bottom-color: #1976d2;
+  background: #000;
+}
+
+.code-fullscreen-tab:hover {
+  color: #fff;
+}
+
+.close-code-fullscreen-btn {
+  background: #f44336;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.close-code-fullscreen-btn:hover {
+  background: #d32f2f;
+}
+
+.code-fullscreen-editor {
+  flex: 1;
+  padding: 1rem;
+  background: #1e1e1e;
+}
+
+.code-fullscreen-textarea {
+  flex: 1;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: none;
+  background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+  padding: 1rem;
+  tab-size: 2;
+  caret-color: #d4d4d4;
+  overflow-y: auto;
+}
+
+/* Custom scrollbar for fullscreen code editors */
+.code-fullscreen-textarea::-webkit-scrollbar {
+  width: 8px;
+}
+
+.code-fullscreen-textarea::-webkit-scrollbar-track {
+  background: #2d2d2d;
+  border-radius: 4px;
+}
+
+.code-fullscreen-textarea::-webkit-scrollbar-thumb {
+  background: #4c4c4c;
+  border-radius: 4px;
+  border: 1px solid #2d2d2d;
+}
+
+.code-fullscreen-textarea::-webkit-scrollbar-thumb:hover {
+  background: #5c5c5c;
+}
+
+.code-fullscreen-textarea::-webkit-scrollbar-corner {
+  background: #2d2d2d;
+}
+
+/* Code fullscreen button styling */
+.code-fullscreen-icon-btn {
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.5rem;
+}
+
+.code-fullscreen-icon-btn:hover {
+  color: #fff;
+}
+
+.code-expand-icon-btn {
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.code-expand-icon-btn:hover {
+  color: #ccc;
+}
+
+
+
+/* Python Upgrade Card Styles */
+.upgrade-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.upgrade-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.upgrade-card h3 {
+  color: #000;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.upgrade-card p {
+  color: #333;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.upgrade-card .pro-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.python-logo {
+  width: 300px !important;
+  height: 300px;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQsAAAC9CAMAAACTb6i8AAAApVBMVEX////+0UI1caP+zzUkaZ/+0D0sbaK3xs7+0T/+6rL+67X+2m3/7sD///0cZp6zw87//ff+zit+m6709vb+3n9EeaX+1Vn/+/ElaZr/+ef/78T+4Ij/8culuMTi5+aIpLZRf6P/9dr+2WvS292htsptkKdjiqWTq7/CztB7mrFGeaA5cp9eiK/s7++htcLa4eL+117/6Kn+5Jxbhqasv9P+4pT+3HfWMi+YAAAD90lEQVR4nO3a23aiMBQG4GASigdQ1FqPaGu1qGMPtvX9H20IU6uGoNKyzJrwf1deJr+bJOxACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADsuevpzeO4OZvPZ7Pm0ygMGrpHpIkbjpddj9nfGGOreX2te1zX545Wnl1KsFl3Eege25UFS5YMYhfHSPforiroipqwFYUheGPd47sidxKlYK8Ws25KGAWqjKkXRTFzCVkv1aXRbeke4tXU2W66U/Wyweq6h3g1Ios/8a/WSr1+NjWP8HpEFktX/Fqr66JgWbBQ/Bqr14uCZVHqPgcvi5RTRtGyKNme6uRZzCxOQBbFzKJ7gAnFzYK0JCErbhYy+fhpfBataXhzrL4jHzOiLNzXTqxacXUPPHdBc+WxNPLeKrKwuCNwavV1jz1no8R8z+wjDWvH8d90jz5XYy9DElIWluXXdI8/R/VsUcRZOPssHHqnewa5Cc6drc5kYfG27inkZpFlrdhlwQ+ysGhP9xxykrksSvZYzmKjexI5ec5aFnEW9DALp6N7EjlZZo1C9DuPszDlIVmndP5PZRGQnn+chRnbaphxQ40ekXdCalJdmLFgjDIvnd4LIe2jtdOUXfUp69Lp1Qm5Oy4Li291TyMXs2xZsJXokEtlYfGq7mnkYp7S97cVL6wem4zEhVpFKgtTsnhXPgerxePHx8d3B6Mu+hlhOF3H3YpEFAZnwSbhiQ7N/TYRhblZsHGcRGPY7/drO5VY+W3Q8XkiClOySKwXLP7WpF+lStxJJmFMFol9ZBJVRe9V9e+nMyQLubHrRXvmPc2UhDHni4/jc6e9dEnDyhiFKedO6SIoeh8nn8mN4gxqRv9X+t6E3RDXUq6PJ7MY6p5GLtzj75DYlNz75ycvZ2FI97d5tHh6U/l9/AKGbCNyAyN6IU8esc+WhSl3Z+7tb7Mwpt0pfXvykyx8U8oiKozD7q8XkHLGLKgZh4t/XthvsqAPusefq7Br/zQL7g90jz5nwWT3AaMqC65+ZY1V73WPPXduuLiNlZJZ8G15r7JXq9WGhpyxEtwYSWRhyOXHjyTq4rNxF2kc0D3Eq0muF77EpE30tLP7iCHdiksgi73UMzinPnWQRbyfPAx7FdHnQRY8Pmv3KLL47uO1ObKw6L/T9mehskjpd371ujtOkbIgHfX1SPyQiPsCQ24ALpLWCKfVQYea9c3zeWVffUPCxc2yY1BL7xJDJ/XsSbkZ90KXa2y44vMCh1P6WaQH5Euj1rbiDy6+iN/Wtlac13VJb1jeDLbVh4fqdrApD8340BkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP5rfwFyakX230cPEwAAAABJRU5ErkJggg==');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.upgrade-btn {
+  background: #000;
+  color: #fff;
+  border: 2px solid #000;
+  padding: 0.8rem 2rem;
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.upgrade-btn:hover {
+  background: #fff;
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.close-upgrade-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-upgrade-btn:hover {
+  color: #000;
+}
+
+/* Save Confirmation Card */
+.save-confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.save-confirmation-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 0;
+  padding: 2rem 2.5rem;
+  text-align: center;
+  max-width: 450px;
+  width: 90%;
+  z-index: 1000;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.save-confirmation-card h3 {
+  color: #000;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.save-confirmation-card p {
+  color: #333;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.save-confirmation-card .btn-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.save-confirmation-card .btn {
+  padding: 0.8rem 2rem;
+  border-radius: 0;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.save-confirmation-card .btn-primary {
+  background: #000;
+  color: #fff;
+  border: 2px solid #000;
+}
+
+.save-confirmation-card .btn-primary:hover {
+  background: #fff;
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.save-confirmation-card .btn-secondary {
+  background: #fff;
+  color: #000;
+  border: 2px solid #000;
+}
+
+.save-confirmation-card .btn-secondary:hover {
+  background: #000;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.preview-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: #fff;
+}
+#fullscreenBtn {
+  position: absolute;
+  top: 25rem;
+  right: 30px;
+  z-index: 1000;
+}
+
+.cp-logo-icon {
+  font-size: 1.1rem;
+  font-weight: 600;
+  position: relative;
+  bottom: 3px;
+  right: 10px;
+}
+
+.cp-btn-small {
+  padding: 5px 11px;
+  font-size: 13px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.cp-btn-small::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.cp-btn-small:hover {
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  backdrop-filter: blur(15px);
+}
+
+.cp-btn-small:hover::before {
+  left: 100%;
+}
+
+.cp-btn-small:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.cp-fullscreen-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+}
+
+.cp-fullscreen-header {
+  position: absolute;
+  top: 20px;
+  right: 40px;
+  z-index: 10000;
+  padding: 0;
+}
+
+.cp-fullscreen-header .cp-btn-small {
+  padding: 5px 11px;
+  font-size: 13px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.cp-fullscreen-header .cp-btn-small::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.cp-fullscreen-header .cp-btn-small:hover {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.4);
+  transform: translateY(-2px);
+  backdrop-filter: blur(15px);
+}
+
+.cp-fullscreen-header .cp-btn-small:hover::before {
+  left: 100%;
+}
+
+.cp-fullscreen-header .cp-btn-small:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+#fullscreenFrame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: white;
+}
+  #confirmPostCard.fade-out {
+    opacity: 0 !important;
+    transition: opacity 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Elegant Welcome Overlay Styles */
+  .welcome-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    backdrop-filter: blur(1px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    overflow: hidden;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-80px) scale(0.9);
+    }
+  }
+
+  .welcome-overlay {
+    animation: slideInUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .welcome-overlay.fade-out {
+    animation: fadeOut 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  .welcome-content {
+    text-align: center;
+    padding: 3rem;
+    max-width: 600px;
+  }
+
+  .welcome-logo {
+    margin-bottom: 3rem;
+  }
+
+  .logo-text {
+    font-size: 5rem;
+    font-weight: 200;
+    color: #1a1a1a;
+    letter-spacing: 0.2em;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    margin: 0;
+  }
+
+  .welcome-title {
+    margin-bottom: 4rem;
+  }
+
+  .welcome-title h1 {
+    font-size: 2.2rem;
+    font-weight: 300;
+    color: #1a1a1a;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+    font-family: 'Georgia', 'Times New Roman', serif;
+  }
+
+  .welcome-subtitle {
+    font-size: 1rem;
+    font-weight: 300;
+    color: #777;
+    line-height: 1.4;
+    margin: 0;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    letter-spacing: 0.02em;
+  }
+
+  .welcome-actions {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin-top: 3rem;
+  }
+
+  .elegant-btn {
+    padding: 1rem 3rem;
+    border: 1px solid #1a1a1a;
+    background: transparent;
+    color: #1a1a1a;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1.1rem;
+    font-weight: 300;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+  }
+
+  .elegant-btn:hover {
+    background: #1a1a1a;
+    color: #ffffff;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .welcome-content {
+      padding: 2rem 1.5rem;
+    }
+
+    .logo-text {
+      font-size: 2.5rem;
+    }
+
+    .welcome-title h1 {
+      font-size: 2rem;
+    }
+
+    .welcome-features {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .welcome-actions {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .elegant-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+  <!-- Elegant Welcome Overlay -->
+  <div id="welcome-overlay" class="welcome-overlay">
+    <div class="welcome-content">
+      <div class="welcome-logo">
+        <h1 class="logo-text">STUDIO</h1>
+      </div>
+      
+      <div class="welcome-title">
+        <h1>Ready to build workspace?</h1>
+        <p class="welcome-subtitle">Professional code editor with live preview</p>
+      </div>
+      
+      <div class="welcome-actions">
+        <button id="start-creating-btn" class="elegant-btn">Yes</button>
+        <button id="view-templates-btn" class="elegant-btn">No</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cp-main-container" style="margin: 0; padding: 0; display: none;" id="editor-container" 
+       data-has-content="{% if pen %}true{% else %}false{% endif %}" 
+       data-has-code-content="{% if has_code_content %}true{% else %}false{% endif %}"
+       data-title="{{ title_text }}">
+  
+      <!-- Navigation Header -->
+      <div class="nav-header">
+        <div class="nav-left">
+          <div class="nav-logo" style="font-family: 'Montserrat', sans-serif; font-size: 1.5rem; font-weight: 700; color: #111; margin-right: 1rem;">STUDIO</div>
+        </div>
+                        <div class="nav-center" style="margin-left: 270px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #000; cursor: pointer; transition: color 0.2s; margin-right: 0.75rem; margin-top: -1px;" title="Edit title">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <input type="text" id="project-title" class="nav-title-input" placeholder="Untitled" value="{{ title_text }}" maxlength="20">
+        </div>
+        <div class="nav-right">
+          <div style="display: flex; align-items: center; gap: 1.5rem;">
+
+            <button id="addFileBtn" class="nav-link" style="background: #000; color: #fff; border: none; border-radius:
+            4px; padding: 0.5rem 1rem; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; transition: all 0.2s; font-weight: 500; white-space: nowrap;">
+            Add File
+        </button>
+        
+        <!-- Custom Modal -->
+        <div id="premiumModal" style="
+    display:none; 
+    position:fixed; 
+    top:0; 
+    left:0; 
+    width:100%; 
+    height:100%; 
+    background:rgba(0,0,0,0.6); 
+    z-index:9999; 
+    justify-content:center; 
+    align-items:center;
+">
+    <div style="
+        background:#fff; 
+        padding:24px; 
+        border-radius:10px; 
+        max-width:420px; 
+        text-align:center; 
+        font-family:'Montserrat', sans-serif; 
+        box-shadow:0 6px 20px rgba(0,0,0,0.15);
+    ">
+        <!-- Header -->
+        <h2 style="
+            font-size:18px; 
+            font-weight:600; 
+            color:#222; 
+            margin-bottom:12px;
+        ">
+            Premium Feature Required
+        </h2>
+
+        <!-- Body Text -->
+        <p style="
+            font-size:15px; 
+            color:#333; 
+            margin-bottom:10px; 
+            line-height:1.4;
+        ">
+            Extra files added outside of HTML, CSS, and JavaScript will not be saved when you post.
+        </p>
+        <p style="
+            font-size:15px; 
+            color:#333; 
+            margin-bottom:20px; 
+            line-height:1.4;
+        ">
+            <a href="/library" style="
+                color:#007bff; 
+                font-weight:600; 
+                text-decoration:none;
+            ">
+                Upgrade now
+            </a> to ensure your work is securely stored.
+        </p>
+
+        <!-- Checkbox -->
+        <label style="
+            display:block; 
+            margin-bottom:18px; 
+            font-size:14px; 
+            color:#555; 
+            cursor:pointer;
+        ">
+            <input type="checkbox" id="dontShowAgain" style="margin-right:6px;">
+            Don’t show this again
+        </label>
+
+        <!-- Footer Actions -->
+        <button id="closeModalBtn" style="
+            padding:8px 16px; 
+            border:none; 
+            background:#000; 
+            color:#fff; 
+            border-radius:4px; 
+            cursor:pointer; 
+            font-size:14px;
+        ">
+            Close
+        </button>
+    </div>
+</div>
+      
+      <script>
+      const modal = document.getElementById("premiumModal");
+      const closeModalBtn = document.getElementById("closeModalBtn");
+      const dontShowAgainCheckbox = document.getElementById("dontShowAgain");
+      
+      document.getElementById("addFileBtn").addEventListener("click", function() {
+          // Only show modal if user hasn't disabled it
+          if (!localStorage.getItem("hidePremiumModal")) {
+              modal.style.display = "flex";
+          }
+      });
+      
+      closeModalBtn.addEventListener("click", function() {
+          if (dontShowAgainCheckbox.checked) {
+              localStorage.setItem("hidePremiumModal", "true");
+          }
+          modal.style.display = "none";
+      });
+      </script>
+
+
+
+
+
+
+
+            <button id="instructionBtn" class="nav-link" style="background: #fff; color: #000; border: 1px solid #000; border-radius: 4px; padding: 0.5rem 1rem; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; transition: all 0.2s; font-weight: 500; white-space: nowrap;">Instructions</button>
+            
+            <div style="position: relative;">
+              <button id="userMenuBtn" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 4px; transition: all 0.2s; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: #333;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #666;">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span style="font-weight: 500;">{{ user.username }}</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #666; transition: transform 0.2s;">
+                  <polyline points="6,9 12,15 18,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              
+              <div id="userDropdown" style="position: absolute; top: 100%; right: 0; background: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 180px; z-index: 1000; display: none; margin-top: 0.5rem; opacity: 0; transform: translateY(-10px); transition: all 0.3s ease;">
+                <div style="padding: 0.75rem 1rem; background: #f8f9fa; border-bottom: 1px solid #eee; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 600; color: #333;">{{ user.username }}</div>
+                
+                <a href="{% url 'main' %}" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; color: #333; text-decoration: none; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; transition: background 0.2s;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #666;">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Home
+                </a>
+                
+                <a href="{% url 'projects' %}" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; color: #333; text-decoration: none; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; transition: background 0.2s;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #666;">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Projects
+                </a>
+                
+                <a href="{% url 'profile' %}" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; color: #333; text-decoration: none; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; transition: background 0.2s;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #666;">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Profile
+                </a>
+                
+                <a href="{% url 'help_center' %}" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; color: #333; text-decoration: none; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; transition: background 0.2s;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #666;">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Help
+                </a>
+                
+                <a href="{% url 'switch_account' %}"
+                  " style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; color: #333; text-decoration: none; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; transition: background 0.2s;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #666;">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Switch Account
+                </a>
+                
+                <a href="{% url 'logout' %}" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; color: #e74c3c; text-decoration: none; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; transition: background 0.2s;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #e74c3c;">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <polyline points="16,17 21,12 16,7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Logout
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Editor Container (Horizontal Layout) -->
+    <div class="editor-container">
+      <!-- Code Panel -->
+      <div class="code-panel">
+        <div class="code-tabs">
+          <div class="code-tabs-left">
+            <button class="code-tab active" data-tab="html">HTML</button>
+            <button class="code-tab" data-tab="css">CSS</button>
+            <button class="code-tab" data-tab="js">JavaScript</button>
+                        <button class="code-tab pro-tab" data-tab="python">
+              <span>Python</span>
+              <span class="small-pro-badge">PRO</span>
+            </button>
+
+
+                 
+          </div>
+          <div class="code-tabs-right">
+            <button class="code-fullscreen-icon-btn" id="code-fullscreen-btn" title="Fullscreen Preview">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            
+            
+          </div>
+        </div>
+        <div class="code-editor">
+          <div class="code-editor-container" id="htmlEditorContainer">
+            <div class="line-numbers" id="htmlLineNumbers"></div>
+            <textarea id="htmlEditor" name="html_code" class="code-textarea" placeholder="Enter your HTML code here..." data-file="HTML"></textarea>
+          </div>
+          <div class="code-editor-container" id="cssEditorContainer" style="display: none;">
+            <div class="line-numbers" id="cssLineNumbers"></div>
+            <textarea id="cssEditor" name="css_code" class="code-textarea" placeholder="Enter your CSS code here..."></textarea>
+          </div>
+          <div class="code-editor-container" id="jsEditorContainer" style="display: none;">
+            <div class="line-numbers" id="jsLineNumbers"></div>
+            <textarea id="jsEditor" name="js_code" class="code-textarea" placeholder="Enter your JavaScript code here..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Panel -->
+      <div class="preview-panel">
+        <div class="preview-header">
+          <h3 class="preview-title">Live Preview</h3>
+          <div style="position: relative; display: inline-block; margin-left: 0.5rem;">
+            <button id="previewDropdownBtn" style="display: flex; align-items: center; gap: 0.5rem; background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 0.5rem 0.75rem; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: #fff; transition: all 0.2s;">
+              <span id="currentPreviewFile">HTML</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #ccc; transition: transform 0.2s;">
+                <polyline points="6,9 12,15 18,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            
+            <div id="previewDropdown" style="position: absolute; top: 100%; left: 0; background: #1e1e1e; border: 1px solid #333; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); min-width: 150px; z-index: 1000; display: none; margin-top: 0.25rem; opacity: 0; transform: translateY(-10px); transition: all 0.3s ease;">
+              <!-- HTML files will be populated here -->
+            </div>
+          </div>
+          <div class="preview-actions">
+            <button type="button" id="fullHeightBtn" class="preview-btn">Full Height</button>
+            <button type="button" id="exitFullHeightBtn" class="preview-btn" style="display: none;">Exit Full Height</button>
+            <button type="button" id="saveAsNewBtn" class="preview-btn primary">UPLOAD</button>
+            <button class="fullscreen-icon-btn" id="fullscreen-btn" title="Fullscreen Preview">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <iframe id="previewFrame" class="preview-frame"></iframe>
+      </div>
+    </div>
+  
+  <!-- Full Screen Modal -->
+  <div id="fullscreenModal" class="cp-fullscreen-modal" style="display: none;">
+    <div class="cp-fullscreen-header">
+      <button type="button" id="closeFullscreenBtn" class="cp-btn cp-btn-small">Close Full Screen</button>
+    </div>
+    <iframe id="fullscreenFrame"></iframe>
+  </div>
+
+  <!-- Code Fullscreen Modal -->
+  <div id="code-fullscreen-modal" class="code-fullscreen-modal">
+    <div class="code-fullscreen-header">
+      <div class="code-fullscreen-tabs">
+        <button class="code-fullscreen-tab active" data-tab="html">HTML</button>
+        <button class="code-fullscreen-tab" data-tab="css">CSS</button>
+        <button class="code-fullscreen-tab" data-tab="js">JavaScript</button>
+        <button class="code-fullscreen-tab pro-tab" data-tab="python">
+          <span>Python</span>
+          <span class="small-pro-badge">PRO</span>
+          
+        </button>
+      </div>
+      <button id="close-code-fullscreen-btn" class="close-code-fullscreen-btn">Close</button>
+    </div>
+    <div class="code-fullscreen-editor">
+      <div class="editor-container" id="fullscreenHtmlEditorContainer">
+        <div class="line-numbers" id="fullscreenHtmlLineNumbers"></div>
+        <textarea id="code-fullscreen-html" class="code-fullscreen-textarea" placeholder="Enter your HTML code here..."></textarea>
+      </div>
+      <div class="editor-container" id="fullscreenCssEditorContainer" style="display: none;">
+        <div class="line-numbers" id="fullscreenCssLineNumbers"></div>
+        <textarea id="code-fullscreen-css" class="code-fullscreen-textarea" placeholder="Enter your CSS code here..."></textarea>
+      </div>
+      <div class="editor-container" id="fullscreenJsEditorContainer" style="display: none;">
+        <div class="line-numbers" id="fullscreenJsLineNumbers"></div>
+        <textarea id="code-fullscreen-js" class="code-fullscreen-textarea" placeholder="Enter your JavaScript code here..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Python Upgrade Modal -->
+  <div id="upgrade-overlay" class="upgrade-overlay">
+    <div class="upgrade-card">
+      <button class="close-upgrade-btn" id="close-upgrade-btn">&times;</button>
+      <div class="pro-icon">
+        <div class="python-logo"></div>
+      </div>
+      <h3>Unlock Python</h3>
+      <p>Build full-stack applications with Python. Access advanced features, unlimited projects, and professional development tools.</p>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="{% url 'library' %}" class="upgrade-btn">Upgrade Now</a>
+        <button id="delete-python-btn" style="background: #dc3545; color: #fff; border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">Delete File</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Save Confirmation Modal -->
+  <div id="save-confirmation-overlay" class="save-confirmation-overlay">
+    <div class="save-confirmation-card">
+      <h3>Are you ready to upload?</h3>
+      <p>This will save your template and make it available for others to see and use.</p>
+      <div class="btn-group">
+        <button class="btn btn-primary" id="confirm-save-btn">Yes</button>
+        <button class="btn btn-secondary" id="cancel-save-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add File Modal -->
+  <div id="add-file-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: #fff; border-radius: 8px; padding: 2rem; min-width: 400px; max-width: 500px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 2px solid #000;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 style="color: #000; font-family: 'Montserrat', sans-serif; font-size: 1.2rem; margin: 0; font-weight: 700;">Create New File</h3>
+        <button id="close-add-file-modal" style="background: none; border: none; color: #666; font-size: 1.5rem; cursor: pointer; padding: 0;">×</button>
+      </div>
+      
+      <!-- File type selection -->
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; color: #333; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 600;">File Type:</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <button id="html-file-btn" class="file-type-btn" data-type="html" style="flex: 1; background: #000; color: #fff; border: 2px solid #000; border-radius: 4px; padding: 0.75rem; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">HTML</button>
+          <button id="css-file-btn" class="file-type-btn" data-type="css" style="flex: 1; background: #fff; color: #000; border: 2px solid #000; border-radius: 4px; padding: 0.75rem; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">CSS</button>
+          <button id="js-file-btn" class="file-type-btn" data-type="js" style="flex: 1; background: #fff; color: #000; border: 2px solid #000; border-radius: 4px; padding: 0.75rem; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">JS</button>
+        </div>
+      </div>
+      
+      <!-- Filename input -->
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; color: #333; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 600;">Filename:</label>
+        <input type="text" id="newFileName" placeholder="Enter filename (e.g., a.html, b.css, c.js)" style="width: 100%; background: #fff; border: 2px solid #000; border-radius: 4px; padding: 0.75rem; color: #000; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; box-sizing: border-box;">
+      </div>
+      
+      <!-- Action buttons -->
+        <div style="display: flex; gap: 0.5rem;">
+          <button id="addFileBtnModal" style="background: #000; color: #fff; border: 2px solid #000; border-radius: 4px; padding: 0.75rem 1rem; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease; flex: 1;">Create File</button>
+
+          
+          <button id="cancelAddFileBtn" style="background: #fff; color: #000; border: 2px solid #000; border-radius: 4px; padding: 0.75rem 1rem; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease; flex: 1;">Cancel</button>
+        </div>
+    </div>
+  </div>
+
+  <!-- Instructions Modal -->
+  <div id="instructionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; opacity: 0; transition: all 0.3s ease;">
+    <div style="background: #fff; border-radius: 8px; padding: 2rem; min-width: 400px; max-width: 800px; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 2px solid #000; transform: scale(0.95); transition: all 0.3s ease;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h3 style="color: #000; font-family: 'Montserrat', sans-serif; font-size: 1.2rem; margin: 0; font-weight: 700;">How to Use CodeMentor Studio</h3>
+        <button id="closeInstructionModal" style="background: none; border: none; color: #666; font-size: 1.5rem; cursor: pointer; padding: 0;">×</button>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <!-- Left Column -->
+        <div>
+          <div style="margin-bottom: 2rem;">
+            <h4 style="font-family: 'Montserrat', sans-serif; color: #333; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #000;">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Creating Files
+            </h4>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; border-left: 4px solid #000;">
+              <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>Step 1:</strong> Click "Add File" button</p>
+              <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>Step 2:</strong> Choose file type (HTML, CSS, JS)</p>
+              <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>Step 3:</strong> Enter filename with extension</p>
+              <p style="margin: 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>Step 4:</strong> Click "Create File" to add</p>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 2rem;">
+            <h4 style="font-family: 'Montserrat', sans-serif; color: #333; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #000;">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Editing Code
+            </h4>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; border-left: 4px solid #000;">
+              <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Switch between files using tabs</p>
+              <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Auto-suggestions appear as you type</p>
+              <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Changes save automatically</p>
+              <p style="margin: 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Preview updates in real-time</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div>
+          <div style="margin-bottom: 2rem;">
+            <h4 style="font-family: 'Montserrat', sans-serif; color: #333; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #000;">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Live Preview
+            </h4>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; border-left: 4px solid #000;">
+              <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> See your changes instantly</p>
+              <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Fullscreen preview available</p>
+              <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Responsive design testing</p>
+              <p style="margin: 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Interactive elements work</p>
+            </div>
+          </div>
+
+                      <div style="margin-bottom: 2rem;">
+              <h4 style="font-family: 'Montserrat', sans-serif; color: #333; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #000;">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Pro Tips
+              </h4>
+              <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; border-left: 4px solid #000;">
+                <div style="margin-bottom: 0.75rem;">
+                  <p style="margin: 0 0 0.25rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: #666; font-weight: 600;">KEYBOARD SHORTCUTS</p>
+                  <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Press Enter to accept auto-suggestions</p>
+                  <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Use Emmet shortcuts (e.g., "div.container")</p>
+                </div>
+                
+                <div style="margin-bottom: 0.75rem;">
+                  <p style="margin: 0 0 0.25rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: #666; font-weight: 600;">WORKFLOW</p>
+                  <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Click title to rename project</p>
+                  <p style="margin: 0 0 0.5rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Files are saved automatically</p>
+                </div>
+                
+                <div>
+                  <p style="margin: 0 0 0.25rem 0; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: #666; font-weight: 600;">BEST EXPERIENCE</p>
+                  <p style="margin: 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Click "Full Height" for the best experience</p>
+                  <p style="margin: 0; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #333;"><strong>•</strong> Click "Post" to saved and share with everyone!</p>
+
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #eee;">
+        <p style="font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: #666; margin: 0;">Ready to start coding? Click "Add File" to create your first project!</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+
+
+// Autocomplete data (like Cursor)
+const autocompleteData = {
+  html: [
+    { text: '!', insertText: '<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n</head>\n<body>\n  <h1></h1>\n</body>\n</html>' },
+    { text: 'div', insertText: '<div></div>' },
+    { text: 'span', insertText: '<span></span>' },
+    { text: 'p', insertText: '<p></p>' },
+    { text: 'h1', insertText: '<h1></h1>' },
+    { text: 'h2', insertText: '<h2></h2>' },
+    { text: 'h3', insertText: '<h3></h3>' },
+    { text: 'h4', insertText: '<h4></h4>' },
+    { text: 'h5', insertText: '<h5></h5>' },
+    { text: 'h6', insertText: '<h6></h6>' },
+    { text: 'a', insertText: '<a href=""></a>' },
+    { text: 'img', insertText: '<img src="" alt="">' },
+    { text: 'ul', insertText: '<ul>\n  <li></li>\n</ul>' },
+    { text: 'ol', insertText: '<ol>\n  <li></li>\n</ol>' },
+    { text: 'li', insertText: '<li></li>' },
+    { text: 'table', insertText: '<table>\n  <tr>\n    <td></td>\n  </tr>\n</table>' },
+    { text: 'tr', insertText: '<tr>\n    <td></td>\n</tr>' },
+    { text: 'td', insertText: '<td></td>' },
+    { text: 'form', insertText: '<form>\n  \n</form>' },
+    { text: 'input', insertText: '<input type="text">' },
+    { text: 'button', insertText: '<button></button>' },
+    { text: 'section', insertText: '<section>\n  \n</section>' },
+    { text: 'article', insertText: '<article>\n  \n</article>' },
+    { text: 'header', insertText: '<header>\n  \n</header>' },
+    { text: 'footer', insertText: '<footer>\n  \n</footer>' },
+    { text: 'nav', insertText: '<nav>\n  \n</nav>' },
+    { text: 'main', insertText: '<main>\n  \n</main>' },
+    { text: 'aside', insertText: '<aside>\n  \n</aside>' },
+    { text: 'body', insertText: '<body>\n  \n</body>' },
+    { text: 'br', insertText: '<br>' },
+    { text: 'hr', insertText: '<hr>' },
+    { text: 'strong', insertText: '<strong></strong>' },
+    { text: 'em', insertText: '<em></em>' },
+    { text: 'code', insertText: '<code></code>' },
+    { text: 'pre', insertText: '<pre></pre>' },
+    { text: 'textarea', insertText: '<textarea></textarea>' },
+    { text: 'select', insertText: '<select>\n  <option></option>\n</select>' },
+    { text: 'option', insertText: '<option></option>' },
+    { text: 'label', insertText: '<label></label>' },
+    { text: 'fieldset', insertText: '<fieldset>\n  \n</fieldset>' },
+    { text: 'legend', insertText: '<legend></legend>' },
+    { text: 'link', insertText: '<link href="" rel="stylesheet">' }
+  ],
+  css: [
+    { text: 'color', insertText: 'color: ;' },
+    { text: 'background', insertText: 'background: ;' },
+    { text: 'margin', insertText: 'margin: ;' },
+    { text: 'padding', insertText: 'padding: ;' },
+    { text: 'border', insertText: 'border: ;' },
+    { text: 'width', insertText: 'width: ;' },
+    { text: 'height', insertText: 'height: ;' },
+    { text: 'font-size', insertText: 'font-size: ;' },
+    { text: 'font-family', insertText: 'font-family: ;' },
+    { text: 'font-weight', insertText: 'font-weight: ;' },
+    { text: 'text-align', insertText: 'text-align: ;' },
+    { text: 'display', insertText: 'display: ;' },
+    { text: 'position', insertText: 'position: ;' },
+    { text: 'top', insertText: 'top: ;' },
+    { text: 'left', insertText: 'left: ;' },
+    { text: 'right', insertText: 'right: ;' },
+    { text: 'bottom', insertText: 'bottom: ;' },
+    { text: 'justify-content', insertText: 'justify-content: ;' },
+    { text: 'align-items', insertText: 'align-items: ;' },
+    { text: 'transform', insertText: 'transform: ;' },
+    { text: 'transition', insertText: 'transition: ;' },
+    { text: 'box-shadow', insertText: 'box-shadow: ;' },
+    { text: 'border-radius', insertText: 'border-radius: ;' },
+    { text: 'opacity', insertText: 'opacity: ;' },
+    { text: 'z-index', insertText: 'z-index: ;' },
+    { text: 'overflow', insertText: 'overflow: ;' },
+    { text: 'cursor', insertText: 'cursor: ;' },
+    { text: 'text-decoration', insertText: 'text-decoration: ;' }
+  ],
+  js: [
+    { text: 'function', insertText: 'function myFunction() {\n  \n}' },
+    { text: 'const', insertText: 'const myVar = "";' },
+    { text: 'let', insertText: 'let myVar = "";' },
+    { text: 'var', insertText: 'var myVar = "";' },
+    { text: 'if', insertText: 'if (condition) {\n  \n}' },
+    { text: 'else', insertText: 'else {\n  \n}' },
+    { text: 'for', insertText: 'for (let i = 0; i < array.length; i++) {\n  \n}' },
+    { text: 'while', insertText: 'while (condition) {\n  \n}' },
+    { text: 'return', insertText: 'return ;' },
+    { text: 'console.log', insertText: 'console.log("");' },
+    { text: 'querySelector', insertText: 'document.querySelector("");' },
+    { text: 'getElementById', insertText: 'document.getElementById("");' },
+    { text: 'innerHTML', insertText: 'element.innerHTML = "";' },
+    { text: 'textContent', insertText: 'element.textContent = "";' },
+    { text: 'style', insertText: 'element.style.property = "";' },
+    { text: 'classList', insertText: 'element.classList.add("");' },
+    { text: 'setAttribute', insertText: 'element.setAttribute("", "value");' },
+    { text: 'getAttribute', insertText: 'element.getAttribute("");' },
+    { text: 'createElement', insertText: 'document.createElement("");' },
+    { text: 'appendChild', insertText: 'parent.appendChild();' },
+    { text: 'removeChild', insertText: 'parent.removeChild();' },
+    { text: 'setTimeout', insertText: 'setTimeout(() => {\n  \n}, 1000);' },
+    { text: 'setInterval', insertText: 'setInterval(() => {\n  \n}, 1000);' },
+    { text: 'addEventListener', insertText: 'addEventListener("click", () => {\n  \n});' },
+    { text: 'fetch', insertText: 'fetch("")\n  .then(response => response.json())\n  .then(data => {\n    \n  });' },
+    { text: 'JSON.parse', insertText: 'JSON.parse();' },
+    { text: 'JSON.stringify', insertText: 'JSON.stringify();' },
+    { text: 'localStorage', insertText: 'localStorage.setItem("", "value");' },
+    { text: 'alert', insertText: 'alert("");' },
+    { text: 'confirm', insertText: 'confirm("");' },
+    { text: 'prompt', insertText: 'prompt("");' }
+  ]
+};
+
+const htmlEditor = document.getElementById('htmlEditor');
+const cssEditor = document.getElementById('cssEditor');
+const jsEditor = document.getElementById('jsEditor');
+const preview = document.getElementById('previewFrame');
+
+// Tab switching functionality (like fork.html)
+const codeTabs = document.querySelectorAll('.code-tab');
+const codeTextareas = document.querySelectorAll('.code-textarea');
+
+codeTabs.forEach(tab => {
+  tab.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const targetTab = tab.getAttribute('data-tab');
+    
+    // Use the centralized switchToTab function to avoid conflicts
+    if (targetTab === 'python') {
+      // Show Python upgrade card
+      document.getElementById('upgrade-overlay').style.display = 'flex';
+    } else {
+      switchToTab(targetTab);
+    }
+  });
+});
+
+// Simple autocomplete like Cursor with Emmet support
+function setupAutocomplete(editor, editorType) {
+  editor.addEventListener('keydown', (e) => {
+    // Tab or Enter to accept suggestion
+    if (e.key === 'Tab' || e.key === 'Enter') {
+      const cursorPosition = editor.selectionStart;
+      const textBeforeCursor = editor.value.substring(0, cursorPosition);
+      const words = textBeforeCursor.split(/\s+/);
+      const currentWord = words[words.length - 1];
+      
+      if (currentWord && currentWord.length > 0) {
+        // Check for Emmet-like patterns first (only for HTML editor)
+        if (editorType === 'html') {
+          const emmetResult = processEmmet(currentWord);
+          if (emmetResult) {
+            e.preventDefault();
+            
+            // Remove the typed word completely
+            const newTextBefore = textBeforeCursor.substring(0, textBeforeCursor.length - currentWord.length);
+            const textAfterCursor = editor.value.substring(cursorPosition);
+            
+            // Insert Emmet result
+            const newText = newTextBefore + emmetResult.html + textAfterCursor;
+            editor.value = newText;
+            
+            // Position caret based on Emmet result
+            let newCursorPosition = newTextBefore.length + emmetResult.caretPosition;
+            editor.setSelectionRange(newCursorPosition, newCursorPosition);
+            
+            // Update preview for the currently selected file
+            const currentFile = document.getElementById('currentPreviewFile').textContent;
+            updatePreview(currentFile);
+            saveDraft();
+            return false;
+          }
+        }
+        
+        // Find matching suggestion
+        const suggestions = autocompleteData[editorType];
+        if (!suggestions) {
+          console.warn('No autocomplete suggestions found for editorType:', editorType);
+          return;
+        }
+        const suggestion = suggestions.find(s => s.text.toLowerCase().startsWith(currentWord.toLowerCase()));
+        
+        if (suggestion) {
+          e.preventDefault();
+          
+          // Remove the typed word completely
+          const newTextBefore = textBeforeCursor.substring(0, textBeforeCursor.length - currentWord.length);
+          const textAfterCursor = editor.value.substring(cursorPosition);
+          
+          // Insert suggestion
+          let insertText = suggestion.insertText;
+          
+          // Special case for HTML5 boilerplate
+          if (insertText.startsWith('<!DOCTYPE html>')) {
+            editor.value = insertText;
+            editor.setSelectionRange(insertText.length, insertText.length);
+          } else {
+            // Normal insertion
+            const newText = newTextBefore + insertText + textAfterCursor;
+            editor.value = newText;
+            
+            // Intelligent caret positioning based on suggestion type
+            let newCursorPosition = newTextBefore.length + insertText.length;
+            
+            // HTML elements with opening/closing tags
+            if (/^<([a-z0-9]+)[^>]*><\/\1>$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('>') + 1;
+            }
+            // HTML elements with attributes (like <a href="">)
+            else if (/^<[a-z0-9]+[^>]*"[^"]*">$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.lastIndexOf('"');
+            }
+            // HTML img tag with src and alt
+            else if (/^<img src="" alt="">$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('src="') + 5;
+            }
+            // HTML input tag
+            else if (/^<input type="text">$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.length;
+            }
+            // CSS properties (like color: ;)
+            else if (/^[a-z-]+:\s*;$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf(':') + 1;
+            }
+            // JavaScript variable declarations (like const myVar = "";)
+            else if (/^[a-z]+\s+[a-zA-Z_$][a-zA-Z0-9_$]*\s*=\s*"";$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+            }
+            // JavaScript function declarations (like function myFunction() {})
+            else if (/^function\s+[a-zA-Z_$][a-zA-Z0-9_$]*\s*\([^)]*\)\s*\{\s*\}$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('{') + 1;
+            }
+            // JavaScript if/else/for/while statements
+            else if (/^(if|else|for|while)\s*\([^)]*\)\s*\{\s*\}$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('{') + 1;
+            }
+            // JavaScript console.log, alert, etc.
+            else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\(""\);$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+            }
+            // JavaScript setAttribute with two parameters
+            else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\("", ""\);$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+            }
+            // JavaScript localStorage.setItem
+            else if (/^localStorage\.setItem\("", ""\);$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+            }
+            // JavaScript fetch with then blocks
+            else if (/^fetch\(""\)\s*\.then\([^)]*\)\s*\.then\([^)]*\)\s*\{[\s\S]*\};$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+            }
+            // JavaScript setTimeout/setInterval
+            else if (/^(setTimeout|setInterval)\(\(\) => \{\s*\}, \d+\);$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('{') + 1;
+            }
+            // JavaScript addEventListener
+            else if (/^addEventListener\("", \(\) => \{\s*\}\);$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('{') + 1;
+            }
+            // JavaScript querySelector, getElementById, getAttribute
+            else if (/^(document\.)?(querySelector|getElementById|getAttribute)\(""\);?$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+            }
+            // JavaScript innerHTML, textContent
+            else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\.(innerHTML|textContent)\s*=\s*"";?$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+            }
+            // JavaScript style property
+            else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\.style\.[a-zA-Z0-9_$]+\s*=\s*"";?$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+            }
+            // JavaScript classList.add
+            else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\.classList\.add\(""\);?$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+            }
+            // JavaScript createElement
+            else if (/^document\.createElement\(""\);?$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+            }
+            // JavaScript JSON.parse, JSON.stringify
+            else if (/^JSON\.(parse|stringify)\(\);?$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('(') + 1;
+            }
+            // JavaScript appendChild, removeChild
+            else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\.(appendChild|removeChild)\(\);?$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('(') + 1;
+            }
+            // JavaScript return statement
+            else if (/^return\s*;?$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('return') + 6;
+            }
+            // HTML link tag
+            else if (/^<link href="" rel="stylesheet">$/.test(insertText)) {
+              newCursorPosition = newTextBefore.length + insertText.indexOf('href=""') + 6;
+            }
+            
+            editor.setSelectionRange(newCursorPosition, newCursorPosition);
+          }
+          
+          // Update preview for the currently selected file
+          const currentFile = document.getElementById('currentPreviewFile').textContent;
+          updatePreview(currentFile);
+          saveDraft();
+          return false;
+        }
+      }
+    }
+  });
+}
+
+// Emmet-like functionality
+function processEmmet(text) {
+  // div.abc -> <div class="abc"></div>
+  const classMatch = text.match(/^([a-z0-9]+)\.([a-zA-Z0-9_-]+)$/);
+  if (classMatch) {
+    const tag = classMatch[1];
+    const className = classMatch[2];
+    return {
+      html: `<${tag} class="${className}"></${tag}>`,
+      caretPosition: `<${tag} class="${className}">`.length
+    };
+  }
+  
+  // div#abc -> <div id="abc"></div>
+  const idMatch = text.match(/^([a-z0-9]+)#([a-zA-Z0-9_-]+)$/);
+  if (idMatch) {
+    const tag = idMatch[1];
+    const id = idMatch[2];
+    return {
+      html: `<${tag} id="${id}"></${tag}>`,
+      caretPosition: `<${tag} id="${id}">`.length
+    };
+  }
+  
+  // div.abc#def -> <div class="abc" id="def"></div>
+  const classIdMatch = text.match(/^([a-z0-9]+)\.([a-zA-Z0-9_-]+)#([a-zA-Z0-9_-]+)$/);
+  if (classIdMatch) {
+    const tag = classIdMatch[1];
+    const className = classIdMatch[2];
+    const id = classIdMatch[3];
+    return {
+      html: `<${tag} class="${className}" id="${id}"></${tag}>`,
+      caretPosition: `<${tag} class="${className}" id="${id}">`.length
+    };
+  }
+  
+  // div#abc.def -> <div id="abc" class="def"></div>
+  const idClassMatch = text.match(/^([a-z0-9]+)#([a-zA-Z0-9_-]+)\.([a-zA-Z0-9_-]+)$/);
+  if (idClassMatch) {
+    const tag = idClassMatch[1];
+    const id = idClassMatch[2];
+    const className = idClassMatch[3];
+    return {
+      html: `<${tag} id="${id}" class="${className}"></${tag}>`,
+      caretPosition: `<${tag} id="${id}" class="${className}">`.length
+    };
+  }
+  
+  // div[attr=value] -> <div attr="value"></div>
+  const attrMatch = text.match(/^([a-z0-9]+)\[([a-zA-Z0-9_-]+)=([^\]]+)\]$/);
+  if (attrMatch) {
+    const tag = attrMatch[1];
+    const attr = attrMatch[2];
+    const value = attrMatch[3];
+    return {
+      html: `<${tag} ${attr}="${value}"></${tag}>`,
+      caretPosition: `<${tag} ${attr}="${value}">`.length
+    };
+  }
+  
+  // div.abc[attr=value] -> <div class="abc" attr="value"></div>
+  const classAttrMatch = text.match(/^([a-z0-9]+)\.([a-zA-Z0-9_-]+)\[([a-zA-Z0-9_-]+)=([^\]]+)\]$/);
+  if (classAttrMatch) {
+    const tag = classAttrMatch[1];
+    const className = classAttrMatch[2];
+    const attr = classAttrMatch[3];
+    const value = classAttrMatch[4];
+    return {
+      html: `<${tag} class="${className}" ${attr}="${value}"></${tag}>`,
+      caretPosition: `<${tag} class="${className}" ${attr}="${value}">`.length
+    };
+  }
+  
+  // div*3 -> <div></div><div></div><div></div>
+  const repeatMatch = text.match(/^([a-z0-9]+)\*(\d+)$/);
+  if (repeatMatch) {
+    const tag = repeatMatch[1];
+    const count = parseInt(repeatMatch[2]);
+    const html = `<${tag}></${tag}>`.repeat(count);
+    return {
+      html: html,
+      caretPosition: html.length
+    };
+  }
+  
+  // div.abc*3 -> <div class="abc"></div><div class="abc"></div><div class="abc"></div>
+  const classRepeatMatch = text.match(/^([a-z0-9]+)\.([a-zA-Z0-9_-]+)\*(\d+)$/);
+  if (classRepeatMatch) {
+    const tag = classRepeatMatch[1];
+    const className = classRepeatMatch[2];
+    const count = parseInt(classRepeatMatch[3]);
+    const html = `<${tag} class="${className}"></${tag}>`.repeat(count);
+    return {
+      html: html,
+      caretPosition: html.length
+    };
+  }
+  
+  return null;
+}
+
+// Setup autocomplete for all editors
+setupAutocomplete(htmlEditor, 'html');
+setupAutocomplete(cssEditor, 'css');
+setupAutocomplete(jsEditor, 'js');
+
+// Add File Modal Functionality
+const addFileBtn = document.getElementById('addFileBtn');
+const addFileModal = document.getElementById('add-file-modal');
+const closeAddFileModal = document.getElementById('close-add-file-modal');
+const newFileName = document.getElementById('newFileName');
+const addFileBtnModal = document.getElementById('addFileBtnModal');
+const cancelAddFileBtn = document.getElementById('cancelAddFileBtn');
+const htmlFileBtn = document.getElementById('html-file-btn');
+const cssFileBtn = document.getElementById('css-file-btn');
+const jsFileBtn = document.getElementById('js-file-btn');
+
+// Store added files
+let addedFiles = [];
+let selectedFileType = 'html';
+
+// Function to update file counter
+function updateFileCounter() {
+  const fileCountElement = document.getElementById('fileCount');
+  const fileCounter = document.getElementById('fileCounter');
+  
+  if (fileCountElement && fileCounter) {
+    const totalFiles = 4 + addedFiles.length; // 4 core files + added files
+    fileCountElement.textContent = totalFiles;
+    
+    // Elegant styling based on file count
+    if (totalFiles > 6) {
+      fileCounter.style.background = '#fff3cd';
+      fileCounter.style.borderColor = '#ffeaa7';
+      fileCounter.style.color = '#856404';
+    } else if (totalFiles > 4) {
+      fileCounter.style.background = '#d1ecf1';
+      fileCounter.style.borderColor = '#bee5eb';
+      fileCounter.style.color = '#0c5460';
+    } else {
+      fileCounter.style.background = '#f8f9fa';
+      fileCounter.style.borderColor = '#e9ecef';
+      fileCounter.style.color = '#495057';
+    }
+  }
+}
+
+// Load saved files from localStorage on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Get the selected file first before any DOM manipulation
+  const selectedFile = localStorage.getItem('selectedPreviewFile');
+  
+  // Check if Python was deleted permanently
+  const pythonDeleted = localStorage.getItem('pythonDeleted');
+  if (pythonDeleted === 'true') {
+    // Hide Python tab permanently
+    const pythonTab = document.querySelector('[data-tab="python"]');
+    if (pythonTab) {
+      pythonTab.remove();
+    }
+    
+    const pythonFullscreenTab = document.querySelector('#code-fullscreen-modal [data-tab="python"]');
+    if (pythonFullscreenTab) {
+      pythonFullscreenTab.remove();
+    }
+  }
+  
+  const savedFiles = localStorage.getItem('addedFiles');
+  if (savedFiles) {
+    addedFiles = JSON.parse(savedFiles);
+      // Recreate all saved tabs with proper file type
+  addedFiles.forEach(fileName => {
+    const fileType = fileName.split('.').pop();
+    createNewTab(fileName, fileType, false); // false = don't make active
+  });
+  }
+  
+  // Set the correct tab and preview immediately after files are loaded
+  setTimeout(() => {
+    if (selectedFile) {
+      // Check if the selected file still exists
+      if (selectedFile === 'html' || selectedFile === 'HTML' || addedFiles.includes(selectedFile)) {
+        // Switch to the correct tab immediately
+        if (selectedFile === 'html' || selectedFile === 'HTML') {
+          // Switch to main HTML tab
+          switchToTab('html');
+        } else {
+          // Switch to the custom file tab
+          switchToTab(selectedFile);
+        }
+      } else {
+        // If the selected file doesn't exist, default to HTML
+        switchToTab('html');
+      }
+    } else {
+      // If no selectedFile is saved, default to HTML
+      switchToTab('html');
+    }
+  }, 100); // Reduced timeout for faster switching
+});
+
+// File type selection
+[htmlFileBtn, cssFileBtn, jsFileBtn].forEach(btn => {
+  btn.addEventListener('click', function() {
+    // Update button styles
+    [htmlFileBtn, cssFileBtn, jsFileBtn].forEach(b => {
+      b.style.background = '#fff';
+      b.style.color = '#000';
+    });
+    this.style.background = '#000';
+    this.style.color = '#fff';
+    
+    selectedFileType = this.getAttribute('data-type');
+  });
+});
+
+// Open modal
+addFileBtn.addEventListener('click', () => {
+  addFileModal.style.display = 'flex';
+  newFileName.focus();
+  // Reset file type selection
+  selectedFileType = 'html';
+  [htmlFileBtn, cssFileBtn, jsFileBtn].forEach(btn => {
+    btn.style.background = '#fff';
+    btn.style.color = '#000';
+  });
+  htmlFileBtn.style.background = '#000';
+  htmlFileBtn.style.color = '#fff';
+});
+
+// Instructions functionality
+document.getElementById('instructionBtn').addEventListener('click', function() {
+    const modal = document.getElementById('instructionModal');
+    const modalContent = modal.querySelector('div');
+    
+    // Reset styles for fade-in
+    modal.style.opacity = '0';
+    modalContent.style.transform = 'scale(0.95)';
+    modal.style.display = 'flex';
+    
+    // Fade in animation
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        modalContent.style.transform = 'scale(1)';
+    }, 10);
+});
+
+document.getElementById('closeInstructionModal').addEventListener('click', function() {
+    const modal = document.getElementById('instructionModal');
+    modal.style.opacity = '0';
+    modal.style.transform = 'scale(0.95)';
+    modal.style.transition = 'all 0.3s ease';
+    
+    setTimeout(() => {
+        modal.style.display = 'none';
+        modal.style.opacity = '1';
+        modal.style.transform = 'scale(1)';
+    }, 300);
+});
+
+// Close modal
+closeAddFileModal.addEventListener('click', () => {
+  addFileModal.style.display = 'none';
+  newFileName.value = '';
+});
+
+cancelAddFileBtn.addEventListener('click', () => {
+  addFileModal.style.display = 'none';
+  newFileName.value = '';
+});
+
+// Close modal with Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && addFileModal.style.display === 'flex') {
+    addFileModal.style.display = 'none';
+    newFileName.value = '';
+  }
+});
+
+// Add file on Enter key
+newFileName.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addNewFile();
+  }
+});
+
+// Add file button
+addFileBtnModal.addEventListener('click', () => {
+  addNewFile();
+});
+
+// User dropdown menu functionality
+const userMenuBtn = document.getElementById('userMenuBtn');
+const userDropdown = document.getElementById('userDropdown');
+const dropdownArrow = userMenuBtn.querySelector('svg:last-child');
+
+userMenuBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const isOpen = userDropdown.style.display === 'block';
+    
+    if (isOpen) {
+        // Close dropdown with animation
+        userDropdown.style.opacity = '0';
+        userDropdown.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            userDropdown.style.display = 'none';
+        }, 300);
+        dropdownArrow.style.transform = 'rotate(0deg)';
+    } else {
+        // Open dropdown with animation
+        userDropdown.style.display = 'block';
+        setTimeout(() => {
+            userDropdown.style.opacity = '1';
+            userDropdown.style.transform = 'translateY(0)';
+        }, 10);
+        dropdownArrow.style.transform = 'rotate(180deg)';
+    }
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function() {
+    userDropdown.style.opacity = '0';
+    userDropdown.style.transform = 'translateY(-10px)';
+    setTimeout(() => {
+        userDropdown.style.display = 'none';
+    }, 300);
+    dropdownArrow.style.transform = 'rotate(0deg)';
+});
+
+// Prevent dropdown from closing when clicking inside it
+userDropdown.addEventListener('click', function(e) {
+    e.stopPropagation();
+});
+
+// Preview dropdown functionality
+const previewDropdownBtn = document.getElementById('previewDropdownBtn');
+const previewDropdown = document.getElementById('previewDropdown');
+const currentPreviewFile = document.getElementById('currentPreviewFile');
+
+// Function to update preview dropdown
+function updatePreviewDropdown() {
+    // ONLY show HTML files in dropdown - CSS files are hidden support tools
+    const htmlFiles = ['HTML', ...addedFiles.filter(file => file.endsWith('.html'))];
+    previewDropdown.innerHTML = '';
+    
+    // Add only HTML files to dropdown
+    htmlFiles.forEach(file => {
+        const item = document.createElement('div');
+        item.style.cssText = 'padding: 0.75rem 1rem; cursor: pointer; font-family: \'Montserrat\', sans-serif; font-size: 0.85rem; color: #fff; border-bottom: 1px solid #333; transition: background 0.2s;';
+        item.textContent = file;
+        
+        item.addEventListener('mouseover', () => {
+            item.style.background = '#2d2d2d';
+        });
+        
+        item.addEventListener('mouseout', () => {
+            item.style.background = 'transparent';
+        });
+        
+        item.addEventListener('click', () => {
+            // Switch to the correct tab first
+            if (file === 'HTML') {
+                switchToTab('html');
+            } else {
+                switchToTab(file);
+            }
+            
+            currentPreviewFile.textContent = file;
+            closePreviewDropdown();
+        });
+        
+        previewDropdown.appendChild(item);
+    });
+    
+    // Remove border from last item
+    const lastItem = previewDropdown.lastElementChild;
+    if (lastItem) {
+        lastItem.style.borderBottom = 'none';
+    }
+}
+
+// Function to close preview dropdown
+function closePreviewDropdown() {
+    previewDropdown.style.opacity = '0';
+    previewDropdown.style.transform = 'translateY(-10px)';
+    setTimeout(() => {
+        previewDropdown.style.display = 'none';
+    }, 300);
+}
+
+// Preview dropdown toggle
+previewDropdownBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const isOpen = previewDropdown.style.display === 'block';
+    
+    if (isOpen) {
+        closePreviewDropdown();
+    } else {
+        updatePreviewDropdown();
+        previewDropdown.style.display = 'block';
+        setTimeout(() => {
+            previewDropdown.style.opacity = '1';
+            previewDropdown.style.transform = 'translateY(0)';
+        }, 10);
+    }
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function() {
+    if (previewDropdown.style.display === 'block') {
+        closePreviewDropdown();
+    }
+});
+
+// Prevent dropdown from closing when clicking inside it
+previewDropdown.addEventListener('click', function(e) {
+    e.stopPropagation();
+});
+
+
+
+// Add hover effects for dropdown items
+userDropdown.addEventListener('mouseover', function(e) {
+    if (e.target.tagName === 'A') {
+        e.target.style.background = '#f8f9fa';
+    }
+});
+
+userDropdown.addEventListener('mouseout', function(e) {
+    if (e.target.tagName === 'A') {
+        e.target.style.background = 'transparent';
+    }
+});
+
+// Add smooth transition for dropdown items when clicked
+userDropdown.addEventListener('click', function(e) {
+    if (e.target.tagName === 'A' && e.target.href) {
+        // Add a small delay for visual feedback before navigation
+        e.preventDefault();
+        const href = e.target.href;
+        
+        // Add click effect
+        e.target.style.background = '#e9ecef';
+        setTimeout(() => {
+            window.location.href = href;
+        }, 150);
+    }
+});
+
+function addNewFile() {
+  const fileName = newFileName.value.trim();
+  
+  // Validate filename
+  if (!fileName) {
+    alert('Please enter a filename');
+    return;
+  }
+  
+  // Check if filename ends with correct extension
+  const expectedExtension = '.' + selectedFileType;
+  if (!fileName.endsWith(expectedExtension)) {
+    alert(`Filename must end with ${expectedExtension}`);
+    return;
+  }
+  
+  // Check if file already exists
+  if (addedFiles.includes(fileName)) {
+    alert('File already exists');
+    return;
+  }
+  
+  // Add file to list
+  addedFiles.push(fileName);
+  
+  // Save to localStorage
+  localStorage.setItem('addedFiles', JSON.stringify(addedFiles));
+  
+  // Create new tab (don't make it active)
+  createNewTab(fileName, selectedFileType, false);
+  
+  // Clear input and close modal
+  newFileName.value = '';
+  addFileModal.style.display = 'none';
+  
+  // Update preview dropdown for all file types
+  updatePreviewDropdown();
+  
+  // Update file counter
+  updateFileCounter();
+}
+
+function createNewTab(fileName, fileType, makeActive = false) {
+  // Create new tab button
+  const newTab = document.createElement('button');
+  newTab.className = 'code-tab';
+  newTab.setAttribute('data-tab', fileName);
+  newTab.style.display = 'flex';
+  newTab.style.alignItems = 'center';
+  newTab.style.gap = '0.5rem';
+  
+  // Ensure new tabs are NOT active (not blue) when created, unless explicitly requested
+  if (!makeActive) {
+    newTab.classList.remove('active');
+  }
+  
+  // Only show delete button for non-HTML/CSS/JS files (Python and others get delete buttons)
+  const isCoreFile = fileName === 'HTML' || fileName === 'CSS' || fileName === 'JavaScript';
+  
+  if (isCoreFile) {
+    newTab.innerHTML = `${fileName}`;
+  } else {
+    newTab.innerHTML = `
+      ${fileName}
+      <button class="delete-file-tab" onclick="deleteFileTab('${fileName}')" style="background: none; border: none; color: #999; cursor: pointer; padding: 0; font-size: 0.8rem; margin-left: 0.25rem;">×</button>
+    `;
+  }
+  
+  // Insert after existing tabs
+  const tabsLeft = document.querySelector('.code-tabs-left');
+  tabsLeft.appendChild(newTab);
+  
+  // Create editor container
+  const editorContainer = document.createElement('div');
+  editorContainer.className = 'code-editor-container';
+  editorContainer.id = `${fileName.replace(/\.(html|css|js)$/, '')}EditorContainer`;
+  editorContainer.style.display = 'none';
+  
+  // Create line numbers
+  const lineNumbers = document.createElement('div');
+  lineNumbers.className = 'line-numbers';
+  lineNumbers.id = `${fileName.replace(/\.(html|css|js)$/, '')}LineNumbers`;
+  
+  // Create textarea
+  const textarea = document.createElement('textarea');
+  textarea.id = fileName.replace(/\.(html|css|js)$/, '') + 'Editor';
+  textarea.className = 'code-textarea';
+  textarea.name = fileName.replace(/\.(html|css|js)$/, '') + '_code';
+  textarea.setAttribute('data-file', fileName);
+  
+  // Set placeholder based on file type
+  if (fileName.endsWith('.html')) {
+    textarea.placeholder = `Enter your ${fileName} code here...`;
+  } else if (fileName.endsWith('.css')) {
+    textarea.placeholder = `Enter your ${fileName} styles here...`;
+  } else if (fileName.endsWith('.js')) {
+    textarea.placeholder = `Enter your ${fileName} JavaScript here...`;
+  }
+  
+  // Add to editor container
+  editorContainer.appendChild(lineNumbers);
+  editorContainer.appendChild(textarea);
+  
+  // Add to code editor
+  const codeEditor = document.querySelector('.code-editor');
+  codeEditor.appendChild(editorContainer);
+  
+  // Add click event to new tab
+  newTab.addEventListener('click', () => {
+    // Ensure all other tabs are deactivated first
+    document.querySelectorAll('.code-tab, button[data-tab], div[data-tab]').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    switchToTab(fileName);
+  });
+  
+  // Setup autocomplete immediately for the new file based on type
+  setupAutocomplete(textarea, fileType);
+  
+  // Initialize line numbers and other functionality
+  setTimeout(() => {
+    // Add line numbers functionality
+    textarea.addEventListener('input', updateLineNumbers);
+    textarea.addEventListener('scroll', syncLineNumbers);
+    
+    // Initialize line numbers
+    updateLineNumbers.call(textarea);
+    
+    // Add autocomplete functionality like original editors
+    textarea.addEventListener('input', function() {
+      // Auto-wrap long lines at 86 characters
+      const lines = this.value.split('\n');
+      const wrappedLines = lines.map(line => {
+        if (line.length > 86) {
+          // Break at 86 characters
+          const chunks = [];
+          for (let i = 0; i < line.length; i += 86) {
+            chunks.push(line.slice(i, i + 86));
+          }
+          return chunks.join('\n');
+        }
+        return line;
+      });
+      
+      // Only update if wrapping occurred
+      if (wrappedLines.join('\n') !== this.value) {
+        const cursorPos = this.selectionStart;
+        this.value = wrappedLines.join('\n');
+        
+        // Restore cursor position
+        this.setSelectionRange(cursorPos, cursorPos);
+      }
+      
+      // Trigger preview update for new files with current selected file
+      const currentFile = document.getElementById('currentPreviewFile').textContent;
+      updatePreview(currentFile);
+      
+      // Save file content to localStorage
+      const fileContent = this.value;
+      localStorage.setItem(`fileContent_${fileName}`, fileContent);
+    });
+    
+    // Load saved content if it exists, otherwise start with empty content
+    const savedContent = localStorage.getItem(`fileContent_${fileName}`);
+    if (savedContent) {
+      textarea.value = savedContent;
+      updateLineNumbers.call(textarea);
+    } else {
+      // Start with empty content for new files
+      textarea.value = '';
+      updateLineNumbers.call(textarea);
+      localStorage.setItem(`fileContent_${fileName}`, '');
+    }
+    
+    // Restore selected preview file if it exists (but don't auto-update preview for new files)
+    const selectedFile = localStorage.getItem('selectedPreviewFile');
+    if (selectedFile) {
+      document.getElementById('currentPreviewFile').textContent = selectedFile;
+      // Don't auto-update preview when creating new files
+    }
+  }, 100);
+}
+
+function switchToTab(tabName) {
+  console.log('Switching to tab:', tabName); // Debug log
+  
+  // Remove active from ALL tabs (including buttons and divs)
+  document.querySelectorAll('.code-tab, button[data-tab], div[data-tab]').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  
+  // Add active to clicked tab
+  const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
+  if (activeTab) {
+    activeTab.classList.add('active');
+  }
+  
+  // Hide all containers
+  document.querySelectorAll('.code-editor-container').forEach(container => {
+    container.style.display = 'none';
+  });
+  
+  // Show active container based on tab name
+  if (tabName === 'html') {
+    document.getElementById('htmlEditorContainer').style.display = 'flex';
+  } else if (tabName === 'css') {
+    document.getElementById('cssEditorContainer').style.display = 'flex';
+  } else if (tabName === 'js') {
+    document.getElementById('jsEditorContainer').style.display = 'flex';
+  } else {
+    // Custom file
+    const activeContainer = document.getElementById(`${tabName.replace(/\.(html|css|js)$/, '')}EditorContainer`);
+    if (activeContainer) {
+      activeContainer.style.display = 'flex';
+    }
+  }
+  
+  // Save the selected tab to localStorage for persistence
+  localStorage.setItem('selectedPreviewFile', tabName);
+  
+  // Update the preview dropdown to show the current file
+  // CSS files are hidden support tools - don't update dropdown for them
+  if (!tabName.endsWith('.css')) {
+    const displayName = tabName === 'html' ? 'HTML' : tabName === 'css' ? 'CSS' : tabName === 'js' ? 'JavaScript' : tabName;
+    document.getElementById('currentPreviewFile').textContent = displayName;
+  }
+  
+  // Automatically update preview to show the current file's content
+  updatePreview(tabName);
+}
+
+function deleteFileTab(fileName) {
+  // Check if it's a core file (HTML, CSS, JS) - Python and others can be deleted
+  const isCoreFile = fileName === 'HTML' || fileName === 'CSS' || fileName === 'JavaScript';
+  
+  if (isCoreFile) {
+    return; // Don't allow deletion of core files
+  }
+  
+  // Show themed confirmation dialog
+  const confirmDelete = confirm(`Are you sure you want to delete "${fileName}"?\n\nThis action cannot be undone.`);
+  
+  if (!confirmDelete) {
+    return;
+  }
+  
+  // Remove from files array
+  addedFiles = addedFiles.filter(file => file !== fileName);
+  
+  // Save updated list to localStorage
+  localStorage.setItem('addedFiles', JSON.stringify(addedFiles));
+  
+  // Delete file content from localStorage permanently
+  localStorage.removeItem(`fileContent_${fileName}`);
+  
+  // Remove tab
+  const tab = document.querySelector(`[data-tab="${fileName}"]`);
+  if (tab) {
+    tab.remove();
+  }
+  
+  // Remove editor container
+  const editorContainer = document.getElementById(`${fileName.replace(/\.(html|css|js)$/, '')}EditorContainer`);
+  if (editorContainer) {
+    editorContainer.remove();
+  }
+  
+  // Switch to HTML tab if removed tab was active
+  const activeTab = document.querySelector('.code-tab.active');
+  if (activeTab && activeTab.getAttribute('data-tab') === fileName) {
+    // Switch to HTML tab
+    document.querySelectorAll('.code-tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelector('[data-tab="html"]').classList.add('active');
+    
+    // Show HTML editor
+    document.querySelectorAll('.code-editor-container').forEach(container => {
+      container.style.display = 'none';
+    });
+    document.getElementById('htmlEditorContainer').style.display = 'flex';
+  }
+  
+  // Update preview dropdown for all file types
+  updatePreviewDropdown();
+}
+
+
+
+// Undo/Redo functionality for all editors
+[htmlEditor, cssEditor, jsEditor].forEach(editor => {
+  const history = [];
+  let historyIndex = -1;
+  const maxHistory = 50;
+  
+  // Save initial state
+  function saveState() {
+    const currentValue = editor.value;
+    if (historyIndex < history.length - 1) {
+      history.splice(historyIndex + 1);
+    }
+    history.push(currentValue);
+    if (history.length > maxHistory) {
+      history.shift();
+    }
+    historyIndex = history.length - 1;
+  }
+  
+  // Initialize with current value
+  saveState();
+  
+  // Save state on input
+  editor.addEventListener('input', () => {
+    saveState();
+    updatePreview();
+    saveDraft();
+  });
+  
+  // Undo/Redo keyboard shortcuts
+  editor.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (historyIndex > 0) {
+        historyIndex--;
+        editor.value = history[historyIndex];
+        editor.setSelectionRange(editor.value.length, editor.value.length);
+        updatePreview();
+        saveDraft();
+      }
+      return false;
+    }
+    
+    if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (historyIndex < history.length - 1) {
+        historyIndex++;
+        editor.value = history[historyIndex];
+        editor.setSelectionRange(editor.value.length, editor.value.length);
+        updatePreview();
+        saveDraft();
+      }
+      return false;
+    }
+    
+    // Ctrl+Shift+Z for undo (alternative)
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (historyIndex < history.length - 1) {
+        historyIndex++;
+        editor.value = history[historyIndex];
+        editor.setSelectionRange(editor.value.length, editor.value.length);
+        updatePreview();
+        saveDraft();
+      }
+      return false;
+    }
+  }, true);
+});
+
+// Ctrl+Enter or Cmd+Enter inserts a new line at the caret position
+[htmlEditor, cssEditor, jsEditor].forEach(editor => {
+  editor.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const start = editor.selectionStart;
+      const value = editor.value;
+      
+      // Find the end of the current line
+      const lines = value.split('\n');
+      let currentLineStart = 0;
+      let currentLineEnd = 0;
+      let lineIndex = 0;
+      
+      for (let i = 0; i < lines.length; i++) {
+        currentLineEnd = currentLineStart + lines[i].length;
+        if (start >= currentLineStart && start <= currentLineEnd) {
+          lineIndex = i;
+          break;
+        }
+        currentLineStart = currentLineEnd + 1; // +1 for the newline character
+      }
+      
+      // Insert newline at the end of the current line
+      const insertPosition = currentLineEnd;
+      const newValue = value.substring(0, insertPosition) + '\n' + value.substring(insertPosition);
+      editor.value = newValue;
+      
+      // Set cursor to the new line
+      editor.setSelectionRange(insertPosition + 1, insertPosition + 1);
+      
+      // Update preview and save
+      updatePreview();
+      saveDraft();
+      
+      return false;
+    }
+  }, true); // Use capture phase to handle before autocomplete
+});
+const DRAFT_KEY = 'codepen_draft';
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+const fullscreenModal = document.getElementById('fullscreenModal');
+const fullscreenFrame = document.getElementById('fullscreenFrame');
+const closeFullscreenBtn = document.getElementById('closeFullscreenBtn');
+
+function updatePreview(selectedFile = null) {
+  console.log('Updating preview for:', selectedFile); // Debug log
+  
+  let html = '';
+  const currentTitle = 'Untitled';
+
+  // Determine which HTML content to use
+  if (selectedFile === 'html' || selectedFile === 'HTML') {
+    // Main HTML editor
+    html = htmlEditor.value;
+  } else if (selectedFile && selectedFile.endsWith('.html')) {
+    // Custom HTML file
+    const fileTextarea = document.querySelector(`textarea[data-file="${selectedFile}"]`);
+    if (fileTextarea) {
+      html = fileTextarea.value || '';
+    } else {
+      html = '';
+    }
+  } else if (selectedFile && selectedFile.endsWith('.css')) {
+    // CSS files are support tools - always show main HTML with this CSS applied
+    html = htmlEditor.value;
+  } else {
+    // Default to main HTML editor
+    html = htmlEditor.value;
+  }
+
+  // Replace or insert <title>
+  if (/<title>.*<\/title>/i.test(html)) {
+    html = html.replace(/<title>.*<\/title>/i, `<title>${currentTitle}</title>`);
+  } else if (/<head[^>]*>/i.test(html)) {
+    html = html.replace(/<head([^>]*)>/i, `<head$1><title>${currentTitle}</title>`);
+  } else {
+    html = `<head><title>${currentTitle}</title></head>\n` + html;
+  }
+
+  // Include CSS and JS content
+  let css = '';
+  let js = '';
+  
+  if (selectedFile === 'html' || selectedFile === 'HTML') {
+    // For main HTML file, include main CSS and JS
+    css = `<style>${cssEditor.value}
+    
+    body { overflow: auto !important; }
+  </style>`;
+    js = `<script>${jsEditor.value}<'/script>`;
+  } else if (selectedFile && selectedFile.endsWith('.html')) {
+    // For custom HTML files, check for linked CSS files
+    const linkMatches = html.match(/<link[^>]*href=["']([^"']+)["'][^>]*>/gi);
+    if (linkMatches) {
+      linkMatches.forEach(linkMatch => {
+        const hrefMatch = linkMatch.match(/href=["']([^"']+)["']/i);
+        if (hrefMatch) {
+          const cssFileName = hrefMatch[1];
+          // Check if the CSS file exists in our added files
+          if (addedFiles.includes(cssFileName)) {
+            const cssTextarea = document.querySelector(`textarea[data-file="${cssFileName}"]`);
+            if (cssTextarea) {
+              css += `<style>${cssTextarea.value}</style>`;
+            }
+          }
+        }
+      });
+    }
+    
+    // Add overflow fix for all HTML files
+    css += `<style>body { overflow: auto !important; }</style>`;
+  } else if (selectedFile && selectedFile.endsWith('.css')) {
+    // CSS files are support tools - show main HTML with this specific CSS applied
+    const cssTextarea = document.querySelector(`textarea[data-file="${selectedFile}"]`);
+    if (cssTextarea) {
+      css = `<style>${cssTextarea.value}</style>`;
+    }
+    
+    // Also include main CSS and JS
+    css += `<style>${cssEditor.value}
+    
+    body { overflow: auto !important; }
+  </style>`;
+    js = `<script>${jsEditor.value}<'/script>`;
+  } else {
+    // For CSS/JS tabs, use main HTML with main CSS/JS
+    css = `<style>${cssEditor.value}
+    
+    body { overflow: auto !important; }
+  </style>`;
+    js = `<script>${jsEditor.value}<'/script>`;
+  }
+  
+  const fullContent = `${html}\n${css}\n${js}`;
+  
+  // Use a more efficient update method to avoid jarring reloads
+  if (preview.contentDocument && preview.contentDocument.readyState === 'complete') {
+    // If iframe is already loaded, update content smoothly
+    const doc = preview.contentDocument;
+    doc.open();
+    doc.write(fullContent);
+    doc.close();
+  } else {
+    // First time or iframe not ready, use srcdoc
+    preview.srcdoc = fullContent;
+  }
+  
+  // Update fullscreen frame if it's open
+  if (fullscreenModal.style.display !== 'none') {
+    fullscreenFrame.srcdoc = fullContent;
+  }
+  
+  // Add click handler for internal links
+  setTimeout(() => {
+    const links = preview.contentDocument.querySelectorAll('a[href]');
+    links.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const href = this.getAttribute('href');
+        
+        // Check if the link points to a file in our editor
+        if (addedFiles.includes(href)) {
+          // Switch to that file tab
+          switchToTab(href);
+          
+          // Update preview to show that file
+          const currentPreviewFile = document.getElementById('currentPreviewFile');
+          if (currentPreviewFile) {
+            currentPreviewFile.textContent = href;
+            updatePreview(href);
+            localStorage.setItem('selectedPreviewFile', href);
+          }
+        } else {
+          // External link - open in new tab
+          window.open(href, '_blank');
+        }
+      });
+    });
+  }, 100);
+}
+
+function saveDraft() {
+  const draft = {
+    html: htmlEditor.value,
+    css: cssEditor.value,
+    js: jsEditor.value,
+    title: 'Untitled'
+  };
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+}
+
+function loadDraft() {
+  const draft = localStorage.getItem(DRAFT_KEY);
+  if (draft) {
+    try {
+      const data = JSON.parse(draft);
+      htmlEditor.value = data.html || '';
+      cssEditor.value = data.css || '';
+      jsEditor.value = data.js || '';
+      updatePreview();
+    } catch {}
+  } else {
+    // Set default code if no draft
+    htmlEditor.value = `<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+  <h1>Hello World</h1>
+</body>
+</html>`;
+    cssEditor.value = `body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px; 
+}`;
+    jsEditor.value = `// Write your JavaScript here
+console.log('Hello from JavaScript!');`;
+    updatePreview();
+  }
+}
+
+function clearDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+}
+
+// Autosave on edit
+document.querySelectorAll('#htmlEditor, #cssEditor, #jsEditor').forEach(el => {
+  el.addEventListener('input', () => {
+    // Get current selected file from dropdown
+    const currentFile = document.getElementById('currentPreviewFile').textContent;
+    updatePreview(currentFile);
+    saveDraft();
+  });
+});
+
+
+
+
+// Full Height functionality
+const fullHeightBtn = document.getElementById('fullHeightBtn');
+const exitFullHeightBtn = document.getElementById('exitFullHeightBtn');
+const editorContainer = document.querySelector('.editor-container');
+const navHeader = document.querySelector('.nav-header');
+
+// Preview Expand functionality
+const previewExpandBtn = document.getElementById('previewExpandBtn');
+const previewPanel = document.querySelector('.preview-panel');
+const codePanel = document.querySelector('.code-panel');
+
+// Code Fullscreen functionality
+const codeFullscreenBtn = document.getElementById('code-fullscreen-btn');
+const codeFullscreenModal = document.getElementById('code-fullscreen-modal');
+const codeFullscreenTabs = document.querySelectorAll('.code-fullscreen-tab');
+const codeFullscreenHtml = document.getElementById('code-fullscreen-html');
+const codeFullscreenCss = document.getElementById('code-fullscreen-css');
+const codeFullscreenJs = document.getElementById('code-fullscreen-js');
+const closeCodeFullscreenBtn = document.getElementById('close-code-fullscreen-btn');
+
+// Add line number functionality to fullscreen editors
+if (codeFullscreenHtml) {
+  codeFullscreenHtml.addEventListener('input', updateFullscreenLineNumbers);
+  codeFullscreenHtml.addEventListener('scroll', syncFullscreenLineNumbers);
+}
+if (codeFullscreenCss) {
+  codeFullscreenCss.addEventListener('input', updateFullscreenLineNumbers);
+  codeFullscreenCss.addEventListener('scroll', syncFullscreenLineNumbers);
+}
+if (codeFullscreenJs) {
+  codeFullscreenJs.addEventListener('input', updateFullscreenLineNumbers);
+  codeFullscreenJs.addEventListener('scroll', syncFullscreenLineNumbers);
+}
+
+// Fullscreen line numbers functionality
+function updateFullscreenLineNumbers() {
+  const textarea = this;
+  const container = textarea.closest('.code-editor-container');
+  const lineNumbers = container.querySelector('.line-numbers');
+  
+  const lines = textarea.value.split('\n');
+  const lineCount = lines.length;
+  
+  // Generate line numbers
+  let lineNumbersHTML = '';
+  for (let i = 1; i <= lineCount; i++) {
+    lineNumbersHTML += `<span class="line-number">${i}</span>`;
+  }
+  
+  lineNumbers.innerHTML = lineNumbersHTML;
+}
+
+function syncFullscreenLineNumbers() {
+  const textarea = this;
+  const container = textarea.closest('.code-editor-container');
+  const lineNumbers = container.querySelector('.line-numbers');
+  
+  // Sync scroll position
+  lineNumbers.scrollTop = textarea.scrollTop;
+}
+
+function openCodeFullscreen() {
+  // Show preview in fullscreen (like preview expand button)
+  fullscreenModal.style.display = 'flex';
+  
+  // Get current content from editors and update fullscreen frame
+  let html = htmlEditor.value;
+  const currentTitle = 'Untitled';
+
+  // Replace or insert <title>
+  if (/<title>.*<\/title>/i.test(html)) {
+    html = html.replace(/<title>.*<\/title>/i, `<title>${currentTitle}</title>`);
+  } else if (/<head[^>]*>/i.test(html)) {
+    html = html.replace(/<head([^>]*)>/i, `<head$1><title>${currentTitle}</title>`);
+  } else {
+    html = `<head><title>${currentTitle}</title></head>\n` + html;
+  }
+
+  const css = `<style>${cssEditor.value}
+    
+    body { overflow: auto !important; }
+  </style>`;
+  const js = `<script>${jsEditor.value}<\/script>`;
+  const fullContent = `${html}\n${css}\n${js}`;
+  
+  // Update fullscreen frame with current content
+  fullscreenFrame.srcdoc = fullContent;
+  document.body.style.overflow = 'hidden';
+}
+
+
+
+function switchCodeTab(tabName) {
+  // Update tab buttons
+  codeFullscreenTabs.forEach(tab => {
+    tab.classList.remove('active');
+    if (tab.getAttribute('data-tab') === tabName) {
+      tab.classList.add('active');
+    }
+  });
+  
+  // Show corresponding editor container
+  const htmlContainer = document.getElementById('fullscreenHtmlEditorContainer');
+  const cssContainer = document.getElementById('fullscreenCssEditorContainer');
+  const jsContainer = document.getElementById('fullscreenJsEditorContainer');
+  
+  htmlContainer.style.display = tabName === 'html' ? 'flex' : 'none';
+  cssContainer.style.display = tabName === 'css' ? 'flex' : 'none';
+  jsContainer.style.display = tabName === 'js' ? 'flex' : 'none';
+}
+
+codeFullscreenBtn.addEventListener('click', openCodeFullscreen);
+closeCodeFullscreenBtn.addEventListener('click', closeCodeFullscreen);
+
+function closeCodeFullscreen() {
+  // Store current scroll positions from fullscreen editors
+  const htmlScrollTop = codeFullscreenHtml.scrollTop;
+  const cssScrollTop = codeFullscreenCss.scrollTop;
+  const jsScrollTop = codeFullscreenJs.scrollTop;
+  
+  // Copy code back to main editors
+  htmlEditor.value = codeFullscreenHtml.value;
+  cssEditor.value = codeFullscreenCss.value;
+  jsEditor.value = codeFullscreenJs.value;
+  
+  // Hide fullscreen modal
+  codeFullscreenModal.style.display = 'none';
+  document.body.style.overflow = 'auto';
+  
+  // Restore scroll positions after a short delay to ensure elements are rendered
+  setTimeout(() => {
+    htmlEditor.scrollTop = htmlScrollTop;
+    cssEditor.scrollTop = cssScrollTop;
+    jsEditor.scrollTop = jsScrollTop;
+  }, 50);
+  
+  // Update preview
+  updatePreview();
+  
+  // Show expand button again
+  const codeExpandBtn = document.getElementById('code-expand-btn');
+  if (codeExpandBtn) {
+    codeExpandBtn.style.display = 'flex';
+  }
+}
+
+
+
+
+
+  // Tab switching in fullscreen
+codeFullscreenTabs.forEach(tab => {
+  tab.addEventListener('click', function() {
+    const targetTab = this.getAttribute('data-tab');
+    
+    // Check if it's the Python tab (PRO feature)
+    if (targetTab === 'python') {
+      // Show upgrade modal
+      document.getElementById('upgrade-overlay').style.display = 'flex';
+      return;
+    }
+    
+    switchCodeTab(targetTab);
+  });
+});
+
+fullHeightBtn.addEventListener('click', () => {
+  editorContainer.classList.add('full-height');
+  navHeader.style.display = 'none';
+  fullHeightBtn.style.display = 'none';
+  exitFullHeightBtn.style.display = 'inline-block';
+});
+
+exitFullHeightBtn.addEventListener('click', () => {
+  editorContainer.classList.remove('full-height');
+  navHeader.style.display = 'flex';
+  fullHeightBtn.style.display = 'inline-block';
+  exitFullHeightBtn.style.display = 'none';
+});
+
+// Fullscreen functionality - Show current preview content
+fullscreenBtn.addEventListener('click', () => {
+  fullscreenModal.style.display = 'flex';
+  
+  // Get current preview content (what's currently being displayed)
+  const currentPreviewFile = document.getElementById('currentPreviewFile');
+  const selectedFile = currentPreviewFile ? currentPreviewFile.textContent : 'HTML';
+  
+  // Use the same logic as updatePreview to get the current displayed content
+  let html = '';
+  const currentTitle = 'Untitled';
+
+  // Determine which HTML content to use based on current preview selection
+  if (selectedFile === 'html' || selectedFile === 'HTML') {
+    // Main HTML editor
+    html = htmlEditor.value;
+  } else if (selectedFile && selectedFile.endsWith('.html')) {
+    // Custom HTML file
+    const fileTextarea = document.querySelector(`textarea[data-file="${selectedFile}"]`);
+    if (fileTextarea) {
+      html = fileTextarea.value || '';
+    } else {
+      html = '';
+    }
+  } else if (selectedFile && selectedFile.endsWith('.css')) {
+    // CSS files are support tools - always show main HTML with this CSS applied
+    html = htmlEditor.value;
+  } else {
+    // Default to main HTML editor
+    html = htmlEditor.value;
+  }
+
+  // Replace or insert <title>
+  if (/<title>.*<\/title>/i.test(html)) {
+    html = html.replace(/<title>.*<\/title>/i, `<title>${currentTitle}</title>`);
+  } else if (/<head[^>]*>/i.test(html)) {
+    html = html.replace(/<head([^>]*)>/i, `<head$1><title>${currentTitle}</title>`);
+  } else {
+    html = `<head><title>${currentTitle}</title></head>\n` + html;
+  }
+
+  // Include CSS and JS content based on current preview selection
+  let css = '';
+  let js = '';
+  
+  if (selectedFile === 'html' || selectedFile === 'HTML') {
+    // For main HTML file, include main CSS and JS
+    css = `<style>${cssEditor.value}
+    
+    body { overflow: auto !important; }
+  </style>`;
+    js = `<script>${jsEditor.value}<'/script>`;
+  } else if (selectedFile && selectedFile.endsWith('.html')) {
+    // For custom HTML files, check for linked CSS files
+    const linkMatches = html.match(/<link[^>]*href=["']([^"']+)["'][^>]*>/gi);
+    if (linkMatches) {
+      linkMatches.forEach(linkMatch => {
+        const hrefMatch = linkMatch.match(/href=["']([^"']+)["']/i);
+        if (hrefMatch) {
+          const cssFileName = hrefMatch[1];
+          // Check if the CSS file exists in our added files
+          if (addedFiles.includes(cssFileName)) {
+            const cssTextarea = document.querySelector(`textarea[data-file="${cssFileName}"]`);
+            if (cssTextarea) {
+              css += `<style>${cssTextarea.value}</style>`;
+            }
+          }
+        }
+      });
+    }
+    
+    // Add overflow fix for all HTML files
+    css += `<style>body { overflow: auto !important; }</style>`;
+  } else if (selectedFile && selectedFile.endsWith('.css')) {
+    // CSS files are support tools - show main HTML with this specific CSS applied
+    const cssTextarea = document.querySelector(`textarea[data-file="${selectedFile}"]`);
+    if (cssTextarea) {
+      css = `<style>${cssTextarea.value}</style>`;
+    }
+    
+    // Also include main CSS and JS
+    css += `<style>${cssEditor.value}
+    
+    body { overflow: auto !important; }
+  </style>`;
+    js = `<script>${jsEditor.value}<'/script>`;
+  } else {
+    // For CSS/JS tabs, use main HTML with main CSS/JS
+    css = `<style>${cssEditor.value}
+    
+    body { overflow: auto !important; }
+  </style>`;
+    js = `<script>${jsEditor.value}<'/script>`;
+  }
+  
+  const fullContent = `${html}\n${css}\n${js}`;
+  
+  // Update fullscreen frame with current preview content
+  fullscreenFrame.srcdoc = fullContent;
+  document.body.style.overflow = 'hidden'; // Prevent background scrolling
+});
+
+closeFullscreenBtn.addEventListener('click', () => {
+  fullscreenModal.style.display = 'none';
+  document.body.style.overflow = 'auto'; // Restore scrolling
+});
+
+
+
+// Close fullscreen with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && fullscreenModal.style.display === 'flex') {
+    fullscreenModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+});
+
+// Welcome overlay functionality
+const welcomeOverlay = document.getElementById('welcome-overlay');
+const mainEditorContainer = document.getElementById('editor-container');
+const startCreatingBtn = document.getElementById('start-creating-btn');
+const viewTemplatesBtn = document.getElementById('view-templates-btn');
+const projectTitleInput = document.getElementById('project-title');
+
+// Backend data
+const hasExistingContent = {% if pen %}true{% else %}false{% endif %};
+const existingTitle = "{{ title_text }}";
+
+// Show welcome overlay only for completely new projects
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if user has ever clicked "Yes" (started a project)
+  const hasStartedProject = localStorage.getItem('hasStartedProject') === 'true';
+  
+  // Get data from the editor container
+  const editorContainer = document.getElementById('editor-container');
+  const hasExistingContent = editorContainer.dataset.hasContent === 'true';
+  const hasCodeContent = editorContainer.dataset.hasCodeContent === 'true';
+  const existingTitle = editorContainer.dataset.title;
+  const hasExistingTitle = existingTitle !== "Untitled";
+  
+  console.log('Debug - hasStartedProject:', hasStartedProject);
+  console.log('Debug - hasExistingContent:', hasExistingContent);
+  console.log('Debug - hasCodeContent:', hasCodeContent);
+  console.log('Debug - existingTitle:', existingTitle);
+  console.log('Debug - hasExistingTitle:', hasExistingTitle);
+  
+  // Show welcome overlay ONLY if user has never started a project AND no existing content
+  if (hasStartedProject || hasCodeContent || hasExistingTitle) {
+    // Show editor directly if user has started before or has content
+    console.log('Debug - Showing editor directly');
+    welcomeOverlay.style.display = 'none';
+    mainEditorContainer.style.display = 'block';
+    loadDraft();
+    updatePreview();
+  } else {
+    // Show welcome overlay only for completely new projects
+    console.log('Debug - Showing welcome overlay');
+    welcomeOverlay.style.display = 'flex';
+    mainEditorContainer.style.display = 'none';
+    
+    // Ensure the animation plays on load
+    welcomeOverlay.style.opacity = '0';
+    welcomeOverlay.style.transform = 'translateY(30px) scale(0.95)';
+    
+    // Trigger animation after a small delay
+    setTimeout(function() {
+      welcomeOverlay.style.opacity = '';
+      welcomeOverlay.style.transform = '';
+    }, 50);
+  }
+});
+
+// Start creating button - fade out welcome and show editor
+startCreatingBtn.addEventListener('click', function() {
+  // Mark that user has started a project (never show welcome overlay again)
+  localStorage.setItem('hasStartedProject', 'true');
+  
+  // Save the current title
+  if (projectTitleInput) {
+    const title = projectTitleInput.value.trim() || 'Untitled';
+    fetch('{% url "saved" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: 'title=' + encodeURIComponent(title)
+    });
+  }
+  
+  // Create a draft pen to prevent welcome overlay from appearing again
+  fetch('{% url "save_current_pen" %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: 'html_code=&css_code=&js_code='
+  });
+  
+  // Add fade out animation
+  welcomeOverlay.classList.add('fade-out');
+  
+  // Wait for animation to complete, then hide overlay and show editor
+  setTimeout(function() {
+    welcomeOverlay.style.display = 'none';
+    mainEditorContainer.style.display = 'block';
+    
+    // Load draft and update preview after showing editor
+    loadDraft();
+    updatePreview();
+  }, 2500); // Match the animation duration (2.5s = 2500ms)
+});
+
+// No button - redirect to main page
+viewTemplatesBtn.addEventListener('click', function() {
+  window.location.href = "{% url 'main' %}";
+});
+
+// Load draft on page load (only when editor is shown)
+loadDraft();
+updatePreview();
+
+// Save title when user starts coding in any editor
+function saveTitleWhenCoding() {
+  if (projectTitleInput) {
+    const title = projectTitleInput.value.trim() || 'Untitled';
+    
+    // Save title to backend via AJAX
+    fetch('{% url "saved" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: 'title=' + encodeURIComponent(title)
+    });
+  }
+}
+
+// Add event listeners to all code editors
+if (htmlEditor) {
+  htmlEditor.addEventListener('input', saveTitleWhenCoding);
+  htmlEditor.addEventListener('input', updateLineNumbers);
+  htmlEditor.addEventListener('scroll', syncLineNumbers);
+}
+if (cssEditor) {
+  cssEditor.addEventListener('input', saveTitleWhenCoding);
+  cssEditor.addEventListener('input', updateLineNumbers);
+  cssEditor.addEventListener('scroll', syncLineNumbers);
+}
+if (jsEditor) {
+  jsEditor.addEventListener('input', saveTitleWhenCoding);
+  jsEditor.addEventListener('input', updateLineNumbers);
+  jsEditor.addEventListener('scroll', syncLineNumbers);
+}
+
+// Line numbers functionality
+function updateLineNumbers() {
+  const textarea = this;
+  const container = textarea.closest('.code-editor-container');
+  const lineNumbers = container.querySelector('.line-numbers');
+  
+  const lines = textarea.value.split('\n');
+  const lineCount = lines.length;
+  
+  // Generate line numbers
+  let lineNumbersHTML = '';
+  for (let i = 1; i <= lineCount; i++) {
+    lineNumbersHTML += `<span class="line-number">${i}</span>`;
+  }
+  
+  lineNumbers.innerHTML = lineNumbersHTML;
+}
+
+function syncLineNumbers() {
+  const textarea = this;
+  const container = textarea.closest('.code-editor-container');
+  const lineNumbers = container.querySelector('.line-numbers');
+  
+  // Sync scroll position
+  lineNumbers.scrollTop = textarea.scrollTop;
+}
+
+// Initialize line numbers for all editors
+function initializeLineNumbers() {
+  const editors = [htmlEditor, cssEditor, jsEditor];
+  editors.forEach(editor => {
+    if (editor) {
+      updateLineNumbers.call(editor);
+    }
+  });
+}
+
+// Initialize line numbers on page load
+document.addEventListener('DOMContentLoaded', initializeLineNumbers);
+
+// Save title when it changes in the title input
+if (projectTitleInput) {
+  projectTitleInput.addEventListener('input', function() {
+    const title = this.value.trim() || 'Untitled';
+    
+    // Save title to backend via AJAX
+    fetch('{% url "saved" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: 'title=' + encodeURIComponent(title)
+    });
+  });
+
+  // Save title when Enter is pressed
+  projectTitleInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const title = this.value.trim() || 'Untitled';
+      
+      // Save title to backend via AJAX
+      fetch('{% url "saved" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: 'title=' + encodeURIComponent(title)
+      }).then(() => {
+        // Blur the input to show it's saved
+        this.blur();
+      });
+    }
+  });
+}
+
+// Python upgrade card functionality
+const closeUpgradeBtn = document.getElementById('close-upgrade-btn');
+const upgradeOverlay = document.getElementById('upgrade-overlay');
+const deletePythonBtn = document.getElementById('delete-python-btn');
+
+closeUpgradeBtn.addEventListener('click', () => {
+  upgradeOverlay.style.display = 'none';
+});
+
+// Delete Python file functionality
+deletePythonBtn.addEventListener('click', () => {
+  // Show confirmation dialog
+  const confirmDelete = confirm('Are you sure you want to delete the Python file?\n\nThis action cannot be undone.');
+  
+  if (confirmDelete) {
+    // Close the upgrade modal
+    upgradeOverlay.style.display = 'none';
+    
+    // Set flag to prevent Python from reappearing
+    localStorage.setItem('pythonDeleted', 'true');
+    
+    // Delete Python tab and editor
+    const pythonTab = document.querySelector('[data-tab="python"]');
+    if (pythonTab) {
+      pythonTab.remove();
+    }
+    
+    const pythonFullscreenTab = document.querySelector('#code-fullscreen-modal [data-tab="python"]');
+    if (pythonFullscreenTab) {
+      pythonFullscreenTab.remove();
+    }
+    
+    // Switch to HTML tab if Python was active
+    const activeTab = document.querySelector('.code-tab.active');
+    if (activeTab && activeTab.getAttribute('data-tab') === 'python') {
+      document.querySelectorAll('.code-tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelector('[data-tab="html"]').classList.add('active');
+      
+      document.querySelectorAll('.code-editor-container').forEach(container => {
+        container.style.display = 'none';
+      });
+      document.getElementById('htmlEditorContainer').style.display = 'flex';
+    }
+  }
+});
+
+// Close upgrade card with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && upgradeOverlay.style.display === 'flex') {
+    upgradeOverlay.style.display = 'none';
+  }
+});
+
+// Save as New functionality
+const saveAsNewBtn = document.getElementById('saveAsNewBtn');
+const saveConfirmationOverlay = document.getElementById('save-confirmation-overlay');
+const confirmSaveBtn = document.getElementById('confirm-save-btn');
+const cancelSaveBtn = document.getElementById('cancel-save-btn');
+
+saveAsNewBtn.addEventListener('click', () => {
+  saveConfirmationOverlay.style.display = 'flex';
+});
+
+confirmSaveBtn.addEventListener('click', () => {
+  // Clear the localStorage flag when posting (so welcome overlay can appear for new project)
+  localStorage.removeItem('hasStartedProject');
+  
+  // Create a form and submit it
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '{% url "pen" %}';
+  
+  const csrfToken = document.createElement('input');
+  csrfToken.type = 'hidden';
+  csrfToken.name = 'csrfmiddlewaretoken';
+  csrfToken.value = '{{ csrf_token }}';
+  
+  const titleInput = document.createElement('input');
+  titleInput.type = 'hidden';
+  titleInput.name = 'title';
+  titleInput.value = projectTitleInput ? projectTitleInput.value.trim() || 'Untitled' : 'Untitled';
+  
+  const htmlInput = document.createElement('input');
+  htmlInput.type = 'hidden';
+  htmlInput.name = 'html_code';
+  htmlInput.value = htmlEditor.value;
+  
+  const cssInput = document.createElement('input');
+  cssInput.type = 'hidden';
+  cssInput.name = 'css_code';
+  cssInput.value = cssEditor.value;
+  
+  const jsInput = document.createElement('input');
+  jsInput.type = 'hidden';
+  jsInput.name = 'js_code';
+  jsInput.value = jsEditor.value;
+  
+  form.appendChild(csrfToken);
+  form.appendChild(titleInput);
+  form.appendChild(htmlInput);
+  form.appendChild(cssInput);
+  form.appendChild(jsInput);
+  
+  // Add all new files content to the form
+  addedFiles.forEach(fileName => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'hidden';
+    fileInput.name = fileName.replace(/\.(html|css|js)$/, '') + '_code';
+    
+    const textarea = document.getElementById(fileName.replace(/\.(html|css|js)$/, '') + 'Editor');
+    if (textarea) {
+      fileInput.value = textarea.value;
+    }
+    
+    form.appendChild(fileInput);
+  });
+  
+  // Clear the draft BEFORE submitting (so next time it will be default)
+  clearDraft();
+  localStorage.removeItem('selectedPreviewFile');
+localStorage.removeItem('addedFiles');
+  
+  document.body.appendChild(form);
+  form.submit();
+});
+
+cancelSaveBtn.addEventListener('click', () => {
+  saveConfirmationOverlay.style.display = 'none';
+});
+
+// Close save confirmation with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && saveConfirmationOverlay.style.display === 'flex') {
+    saveConfirmationOverlay.style.display = 'none';
+  }
+});
+
+// Function to reset Python tab (for testing - can be removed later)
+function resetPythonTab() {
+  localStorage.removeItem('pythonDeleted');
+  location.reload();
+}
+
+</script>
+{% endblock %}  

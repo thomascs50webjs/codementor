@@ -1,0 +1,167 @@
+{% extends "app/base.html" %}
+{% block title %}Create - STUDIO{% endblock %}
+
+{% block body %}
+<div class="cp-topbar">
+  <div class="cp-logo"><span class="cp-logo-icon">&#9632;</span> <span class="cp-title-editable" id="titleDisplay" onclick="enableEdit()">{{ title_text|default:'Untitled' }}</span> <input type="text" id="titleInput" class="cp-title-input" value="{{ title_text|default:'Untitled' }}" style="display:none;" /></div>
+  <div class="cp-user">{{ user.username }}</div>
+  <div class="cp-actions">
+    <button class="cp-btn" id="postBtn">Post</button>
+    <a href="{% url 'main' %}" class="cp-btn cp-btn-secondary" id="returnBtn" style="margin-left: 0.5rem; text-decoration: none;">Return</a>
+  </div>
+</div>
+<div class="cp-main-container">
+<form method="post" action="{% url 'pen' %}" id="penForm">
+  {% csrf_token %}
+  <input type="hidden" name="title" id="hiddenTitleInput" value="{{ title_text|default:'Untitled' }}" />
+  <div class="cp-editors-row">
+    <div class="cp-editor-panel">
+      <div class="cp-panel-header cp-html"><span class="cp-panel-icon">&#128396;</span> HTML</div>
+      <textarea id="htmlEditor" name="html_code" class="cp-editor"><!DOCTYPE html>
+<html>
+<head>
+  <title>My Pen</title>
+</head>
+<body>
+  <h1>Hello World!</h1>
+</body>
+</html></textarea>
+    </div>
+    <div class="cp-editor-panel">
+      <div class="cp-panel-header cp-css"><span class="cp-panel-icon">&#10022;</span> CSS</div>
+      <textarea id="cssEditor" name="css_code" class="cp-editor">body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+}</textarea>
+    </div>
+    <div class="cp-editor-panel">
+      <div class="cp-panel-header cp-js"><span class="cp-panel-icon">&#128187;</span> JS</div>
+      <textarea id="jsEditor" name="js_code" class="cp-editor">// Write your JavaScript here
+console.log('Hello from JavaScript!');</textarea>
+    </div>
+  </div>
+
+  <div class="cp-preview-panel">
+    <iframe id="previewFrame"></iframe>
+  </div>
+</form>
+</div>
+<script>
+const htmlEditor = document.getElementById('htmlEditor');
+const cssEditor = document.getElementById('cssEditor');
+const jsEditor = document.getElementById('jsEditor');
+const preview = document.getElementById('previewFrame');
+const titleDisplay = document.getElementById('titleDisplay');
+const titleInput = document.getElementById('titleInput');
+const postBtn = document.getElementById('postBtn');
+const penForm = document.getElementById('penForm');
+const DRAFT_KEY = 'codepen_draft';
+const hiddenTitleInput = document.getElementById('hiddenTitleInput');
+
+function updatePreview() {
+  let html = htmlEditor.value;
+  const currentTitle = titleDisplay.innerText || 'Untitled';
+
+  // Replace or insert <title>
+  if (/<title>.*<\/title>/i.test(html)) {
+    html = html.replace(/<title>.*<\/title>/i, `<title>${currentTitle}</title>`);
+  } else if (/<head[^>]*>/i.test(html)) {
+    html = html.replace(/<head([^>]*)>/i, `<head$1><title>${currentTitle}</title>`);
+  } else {
+    html = `<head><title>${currentTitle}</title></head>\n` + html;
+  }
+
+  const css = `<style>${cssEditor.value}
+    ::-webkit-scrollbar { display: none !important; }
+    body { overflow: auto !important; }
+  </style>`;
+  const js = `<script>${jsEditor.value}<'/script>`;
+  preview.srcdoc = `${html}\n${css}\n${js}`;
+}
+
+function saveDraft() {
+  const draft = {
+    html: htmlEditor.value,
+    css: cssEditor.value,
+    js: jsEditor.value,
+    title: titleDisplay.innerText || 'Untitled'
+  };
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+}
+
+function loadDraft() {
+  const draft = localStorage.getItem(DRAFT_KEY);
+  if (draft) {
+    try {
+      const data = JSON.parse(draft);
+      htmlEditor.value = data.html || '';
+      cssEditor.value = data.css || '';
+      jsEditor.value = data.js || '';
+      if (data.title) titleDisplay.innerText = data.title;
+      updatePreview();
+    } catch {}
+  }
+}
+
+function clearDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+}
+
+// Autosave on edit
+document.querySelectorAll('#htmlEditor, #cssEditor, #jsEditor').forEach(el => {
+  el.addEventListener('input', () => {
+    updatePreview();
+    saveDraft();
+  });
+});
+// Autosave on title edit
+titleInput.addEventListener('input', () => {
+  saveDraft();
+  hiddenTitleInput.value = titleInput.value || 'Untitled';
+});
+titleInput.addEventListener('blur', () => {
+  saveDraft();
+  hiddenTitleInput.value = titleInput.value || 'Untitled';
+});
+
+// Post (submit)
+postBtn.onclick = function() {
+  hiddenTitleInput.value = titleDisplay.innerText || 'Untitled';
+  clearDraft();
+  penForm.submit();
+};
+
+// Load draft on page load
+window.addEventListener('DOMContentLoaded', loadDraft);
+
+updatePreview();
+
+
+function enableEdit() {
+  titleDisplay.style.display = 'none';
+  titleInput.style.display = 'inline-block';
+  titleInput.focus();
+  titleInput.select();
+}
+titleInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    titleDisplay.innerText = titleInput.value || 'Untitled';
+    titleInput.style.display = 'none';
+    titleDisplay.style.display = 'inline';
+    saveDraft();
+  }
+  if (e.key === 'Escape') {
+    titleInput.style.display = 'none';
+    titleDisplay.style.display = 'inline';
+  }
+});
+titleInput.addEventListener('blur', () => {
+  titleDisplay.innerText = titleInput.value || 'Untitled';
+  titleInput.style.display = 'none';
+  titleDisplay.style.display = 'inline';
+  saveDraft();
+});
+</script>
+{% endblock %}  

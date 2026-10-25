@@ -1,0 +1,159 @@
+{% extends "app/base.html" %}
+{% block title %}Policy & Guidelines - STUDIO{% endblock %}
+{% block body %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+body {
+  background: #fff !important;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: #111;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.policy-main {
+  max-width: 540px;
+  min-width: 380px;
+  margin: 0 auto;
+  padding: 20px 36px 18px 36px;
+  background: #fff;
+  border: 1.5px solid #222;
+  border-radius: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.policy-main h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.01em;
+  color: #111;
+}
+.policy-main p {
+  font-size: 1.13rem;
+  line-height: 1.8;
+  color: #222;
+  margin-bottom: 1.7rem;
+}
+.policy-divider {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 2.2rem 0 2.2rem 0;
+}
+.policy-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 2.2rem;
+  font-size: 1.05rem;
+  color: #111;
+}
+.policy-checkbox-row input[type="checkbox"] {
+  width: 1.1em;
+  height: 1.1em;
+  accent-color: #111;
+}
+.policy-btn-row {
+  display: flex;
+  gap: 1.2rem;
+}
+.policy-btn {
+  flex: 1;
+  padding: 0.9rem 0;
+  font-size: 1.08rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1.5px solid #111;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border 0.18s;
+  outline: none;
+}
+.policy-btn:disabled {
+  background: #eee;
+  color: #aaa;
+  border: 1.5px solid #ddd;
+  cursor: not-allowed;
+}
+.policy-btn.agree {
+  background: #111;
+  color: #fff;
+}
+.policy-btn.agree:disabled {
+  background: #bbb;
+  color: #fff;
+  border: 1.5px solid #bbb;
+}
+.policy-btn.agree:hover:enabled {
+  background: #222;
+}
+
+.policy-scroll-area::-webkit-scrollbar {
+  width: 10px;
+}
+.policy-scroll-area::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 6px;
+}
+.policy-scroll-area::-webkit-scrollbar-track {
+  background: #fff;
+}
+.policy-scroll-area {
+  max-height: 280px !important;
+  overflow-y: auto;
+}
+</style>
+<div class="policy-main">
+  <h1 style="font-size:2rem;font-weight:700;margin-bottom:1.5rem;">Usage Policy & Guidelines</h1>
+  <hr style="border: none; border-top: 1px solid #716f6f; margin: 0 0 1.3rem 0;">
+  <div class="policy-scroll-area">
+    <div style="font-size:0.97rem;font-family:'Inter', Arial, sans-serif;">
+      <div style="font-weight:600;font-size:1.13rem;margin-bottom:0.4rem;margin-top:1.2rem; color:#111;">Usage Policies</div>
+      <p style="margin-bottom:1.1rem;font-size:1.05rem;font-family:'Inter', Arial, sans-serif;">To ensure safe and responsible use of this platform, all users are required to adhere to the following guidelines. Violations may result in content removal, temporary suspension, or permanent account ban.</p>
+      <div style="font-weight:600;font-size:1.13rem;margin-bottom:0.4rem;margin-top:1.2rem; color:#111;">Prohibited Uses</div>
+      <ol style="margin-bottom:1.1rem;padding-left:1.3em;line-height:1.7;">
+        <li>Creating, sharing, or executing illegal or malicious code, including malware, viruses, exploits, or hacking tools.</li>
+        <li>Violating any law, regulation, or the rights of others, including intellectual property and data privacy laws.</li>
+        <li>Distributing or hosting harmful content, such as scripts for phishing, credential theft, or unauthorized access.</li>
+        <li>Attempting to bypass platform restrictions, moderation systems, or security measures.</li>
+        <li>Harming, disrupting, or abusing other users or systems.</li>
+      </ol>
+      <div style="font-weight:600;font-size:1.13rem;margin-bottom:0.4rem;margin-top:1.2rem; color:#111;">Enforcement Actions</div>
+      <ol style="margin-bottom:1.1rem;padding-left:1.3em;line-height:1.7;">
+        <li>Content removal or takedown.</li>
+        <li>Account warnings or limitations.</li>
+        <li>Temporary suspension for repeated or serious violations.</li>
+        <li>Permanent ban for egregious misuse.</li>
+      </ol>
+      <div style="font-weight:600;font-size:1.13rem;margin-bottom:0.4rem;margin-top:1.2rem; color:#111;">Reporting, Appeals & Updates</div>
+      <ol style="margin-bottom:0;padding-left:1.3em;line-height:1.7;">
+        <li>If you believe an enforcement action was taken in error, you may contact support to request a review.</li>
+        <li>These policies may be updated at any time. Continued use of the platform constitutes acceptance of the latest version.</li>
+      </ol>
+    </div>
+  </div>
+  <hr class="policy-divider" />
+  <form id="policyForm" method="post">
+    {% csrf_token %}
+    <div class="policy-checkbox-row">
+      <input type="checkbox" id="policyCheckbox" required>
+      <label for="policyCheckbox">I have read and agree to the policy</label>
+    </div>
+    <div class="policy-btn-row">
+      <button type="button" class="policy-btn decline" onclick="window.location.href='{% url 'main' %}'">Decline</button>
+      <button type="submit" name="agree" class="policy-btn agree" id="agreeBtn" disabled>Agree</button>
+    </div>
+  </form>
+  <script>
+    const policyCheckbox = document.getElementById('policyCheckbox');
+    const agreeBtn = document.getElementById('agreeBtn');
+    policyCheckbox.addEventListener('change', function() {
+      agreeBtn.disabled = !this.checked;
+    });
+  </script>
+{% endblock %} 

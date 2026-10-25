@@ -1,0 +1,220 @@
+{% extends "app/base.html" %}
+{% block title %}Edit Template - STUDIO{% endblock %}
+
+{% block body %}
+{% load static %}
+<section class="about-long" aria-label="About STUDIO">
+  <style>
+    /* VARIABLES */
+    .about-long {
+      --bg: #fff;
+      --fg: #111;
+      --muted: #555;
+      --border: #eaeaea;
+      --soft: #f9f9f9;
+      background: var(--bg);
+      color: var(--fg);
+      overflow: hidden;
+      position: relative;
+      padding: 140px 20px;
+    }
+
+    /* BACKGROUND DECORATION */
+    .about-long::before,
+    .about-long::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: var(--soft);
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    .about-long::before {
+      width: 350px;
+      height: 350px;
+      top: -100px;
+      left: -100px;
+    }
+
+    .about-long::after {
+      width: 500px;
+      height: 500px;
+      bottom: -200px;
+      right: -200px;
+    }
+
+    /* CONTAINER */
+    .about-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* HEADER BLOCK */
+    .about-header {
+      text-align: center;
+      margin-bottom: 120px;
+    }
+
+    .about-kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-weight: 700;
+      font-size: 0.9rem;
+      font-family: 'Montserrat', sans-serif;
+      color: var(--muted);
+      margin-bottom: 18px;
+      animation: fadeIn 1s ease forwards;
+    }
+
+    .about-title {
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 900;
+      font-family: 'Montserrat', sans-serif;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      max-width: 900px;
+      margin: 0 auto;
+      animation: fadeInUp 1.2s ease forwards;
+    }
+
+    /* SPLIT LAYOUT */
+    .about-split {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 80px;
+      align-items: center;
+      margin-bottom: 150px;
+    }
+
+    .about-image {
+      flex: 1 1 400px;
+      background: var(--soft);
+      border-radius: 16px;
+      min-height: 260px;
+      position: relative;
+      overflow: hidden;
+    }
+    .about-image::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(0,0,0,0.05), transparent);
+    }
+
+    .about-text {
+      flex: 1 1 400px;
+      font-size: 1.1rem;
+      line-height: 1.85;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      animation: fadeInUp 1.3s ease forwards;
+    }
+
+    /* ICON STRIP */
+    .about-icons {
+      display: flex;
+      justify-content: space-around;
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 150px;
+    }
+
+    .about-icon {
+      text-align: center;
+      max-width: 200px;
+    }
+
+    .about-icon h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-top: 18px;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+
+    @keyframes fadeInUp {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    .about-abc {
+    flex: 0 0 auto; /* Keep its natural size */
+    max-width: 450px; /* Limit how wide it can get */
+  }
+
+  .about-abc img {
+    width: 110%;
+    height: auto; /* Keep aspect ratio */
+    border-radius: 12px; /* Optional rounded edges */
+    display: block;
+  }
+    
+  </style>
+
+  <div class="about-container">
+    <!-- HEADER -->
+    <div class="about-header">
+      <div class="about-kicker">Who We Are</div>
+      <h2 class="about-title">
+        Creativity, Strategy & Technology
+      </h2>
+    </div>
+
+    <!-- SPLIT LAYOUT -->
+    <div class="about-split">
+      <div class="about-abc">
+        <!-- Replace with real image -->
+        <img src="{% static 'app/abc.jpg' %}" alt="Studio team" style="width:100%; height:100%; object-fit:cover;">   </div>   
+      <div class="about-text">
+        We craft more than designs — we create experiences that live in people’s minds.  
+        Every shape, space, and interaction is intentional. Minimal, functional, and unforgettable.
+      </div>
+    </div>
+
+    <!-- ICON STRIP -->
+    <div class="about-icons">
+      <div class="about-icon">
+        <div>L</div>
+        <h3>Purpose Driven</h3>
+      </div>
+      <div class="about-icon">
+        <div>I</div>
+        <h3>Fast Execution</h3>
+      </div>
+      <div class="about-icon">
+        <div>V</div>
+        <h3>Elegant Design</h3>
+      </div>
+      <div class="about-icon">
+        <div>E</div>
+        <h3>Proven Results</h3>
+      </div>
+    </div>
+
+    <!-- SPLIT LAYOUT 2 -->
+    <div class="about-split">
+      <div class="about-text">
+        From bold brand identities to smooth, high-performing websites —  
+        we handle the journey from concept to launch, making sure every detail reflects your vision.
+      </div>
+      <div class="about-image">
+        <video src="{% static 'app/advert.mp4' %}" 
+        style="width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 16px;" 
+        autoplay 
+        muted 
+        loop 
+        playsinline 
+        title="Studio work">
+      </video>
+    </div>
+  </div>
+</section>
+{% endblock %}

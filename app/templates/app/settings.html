@@ -1,0 +1,1492 @@
+{% extends "app/base.html" %}
+{% block title %}Settings - STUDIO{% endblock %}
+
+{% block body %}
+{% load socialaccount %}
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .layout-root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 190px;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #fff;
+    z-index: 10;
+    border-right: 1.5px solid #eee;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar::-webkit-scrollbar {
+    width: 8px;
+    background: #f7f7f7;
+  }
+  .sidebar::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 6px;
+  }
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+  }
+  .sidebar-bottom {
+    margin-top: auto;
+    width: 100%;
+    padding-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+    background: #fff;
+  }
+  .sidebar-divider {
+    width: 70%;
+    height: 1px;
+    background: #eee;
+    margin: 1.2rem 0 0.7rem 0;
+    border: none;
+  }
+  .sidebar-logout {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    padding: 8px 0;
+    width: 75%;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.97rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s, border 0.18s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    text-decoration: none;
+  }
+  .sidebar-logout:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+    box-shadow: 0 2px 8px rgba(34,34,34,0.10);
+  }
+  .sidebar-logout .logout-icon {
+    font-size: 1.15em;
+    vertical-align: middle;
+    color: #111;
+    transition: color 0.18s;
+  }
+  .sidebar-logout:hover .logout-icon {
+    color: #fff;
+  }
+  .sidebar-help {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    border-radius: 0;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    text-decoration: none;
+    outline: none;
+  }
+  .sidebar-help:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+  }
+  .sidebar-logo {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #111;
+    letter-spacing: 0.12em;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    margin-top: 2rem;
+  }
+  .sidebar-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 0.7rem;
+  }
+  .sidebar-btn {
+    background: #fff;
+    color: #111;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    width: 85%;
+    text-align: left;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.02em;
+    transition: color 0.2s, transform 0.18s;
+    cursor: pointer;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+    padding-left: 8%;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-left: 20px;
+    text-decoration: none !important;
+  }
+  .sidebar-btn.active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 10px;
+    box-shadow: none;
+    text-decoration: none !important;
+  }
+  .sidebar-btn::before {
+    display: none;
+  }
+  .sidebar-btn:hover, .sidebar-btn.active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 6px;
+    text-decoration: none !important;
+    box-shadow: none;
+    transform: none;
+    transition: background 0.18s, color 0.18s;
+  }
+  .sidebar-btn span {
+    position: relative;
+    z-index: 1;
+  }
+  .main-content {
+    flex: 1 1 0;
+    min-width: 0;
+    background: #fff;
+    min-height: 100%;
+    margin-left: 190px;
+    padding: 0;
+  }
+  .sidebar-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+    margin-top: 0.7rem;
+    align-items: flex-start;
+    width: 100%;
+    padding-left: 0;
+  }
+  .create-btn-small {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    padding: 7px 20px;
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: none;
+    box-shadow: none;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    min-width: 70px;
+  }
+  .create-btn-small:hover {
+    background: #111;
+    color: #fff;
+  }
+  .sidebar-tool-btn {
+    background: #fff;
+    color: #111;
+    border: none;
+    border-radius: 6px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.95rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    color: #111;
+    cursor: pointer;
+    padding: 8px 0 8px 8%;
+    transition: none;
+    box-shadow: none;
+    width: 85%;
+    justify-content: flex-start;
+    margin-left: 20px;
+    text-align: left;
+    text-decoration: none !important;
+  }
+  .sidebar-tool-btn .icon {
+    font-size: 1.15rem;
+    margin-right: 0.7rem;
+    display: flex;
+    align-items: center;
+  }
+  .sidebar-tool-btn:hover, .sidebar-tool-btn:active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 10px;
+    box-shadow: none;
+    text-decoration: none !important;
+    padding-left: 8%;
+    margin-left: 20px;
+    width: 85%;
+    text-align: left;
+  }
+  .sidebar-extra-section {
+    margin-top: 1.5rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+  .sidebar-extra-section .sidebar-btn {
+    align-items: flex-start;
+    text-align: left;
+    justify-content: flex-start;
+    padding-left: 8%;
+    margin-left: 20px;
+  }
+  .sidebar-section-label {
+    font-size: 0.92rem;
+    color: #888;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    margin-top: -5px;
+  }
+  .sidebar-actions-row {
+    display: flex;
+    gap: 1rem;
+    margin-right: 3px;
+    margin-top: 0.5rem;
+  }
+  .sidebar-home, .sidebar-help, .sidebar-logout-icon {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    text-decoration: none;
+    outline: none;
+  }
+  .sidebar-home:hover, .sidebar-help:hover, .sidebar-logout-icon:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+  }
+  .sidebar-home:hover svg, .sidebar-logout-icon:hover svg {
+    stroke: #fff;
+  }
+  .sidebar-help {
+    border-radius: 0;
+  }
+  .sidebar-logout-icon {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    border-radius: 0;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    text-decoration: none;
+    outline: none;
+  }
+  .sidebar-logout-icon:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+  }
+  .sidebar-logout-icon svg {
+    stroke: #111;
+    transition: none;
+  }
+  .sidebar-logout-icon:hover svg {
+    stroke: #111;
+  }
+
+  /* Advice Card Styles */
+  #advice-card {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    color: #111;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    width: 400px;
+    height: 340px;
+    min-width: 0;
+    max-width: 90vw;
+    min-height: 0;
+    max-height: 90vh;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    padding: 1.2rem 1.2rem 1.2rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #111;
+  }
+  #advice-card .close-advice {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    background: none;
+    border: none;
+    color: #111;
+    font-size: 1.3rem;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  #advice-card .close-advice:hover {
+    color: #e00;
+  }
+  #logout-modal {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s cubic-bezier(.4,0,.2,1), visibility 0.25s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background: #fff;
+    color: #111;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    width: 340px;
+    min-width: 0;
+    max-width: 90vw;
+    min-height: 0;
+    max-height: 90vh;
+    text-align: center;
+    font-family: 'Montserrat',sans-serif;
+    padding: 1.2rem;
+    z-index: 99999;
+    border: 1px solid #111;
+  }
+  #logout-modal.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  /* Library Page Styles - Black, White, Elegant Theme */
+  .elegant-hero {
+    background: #fff;
+    padding: 4rem 2.5rem;
+    border-bottom: 1px solid #eee;
+  }
+  .hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 4rem;
+  }
+  .hero-text h1 {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #111;
+    margin: 0 0 1rem 0;
+    letter-spacing: -0.03em;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .hero-subtitle {
+    font-size: 1.3rem;
+    color: #666;
+    margin: 0 0 2.5rem 0;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 3rem;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #111;
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.9rem;
+    color: #888;
+    font-weight: 500;
+    font-family: 'Montserrat', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .hero-video {
+    flex-shrink: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 400px;
+    height: 280px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    border: 1px solid #eee;
+  }
+  .video-frame video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .video-frame:hover .video-overlay {
+    opacity: 1;
+  }
+  .play-btn {
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .play-btn:hover {
+    background: #fff;
+    transform: scale(1.1);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+  }
+  .play-btn svg {
+    width: 28px;
+    height: 28px;
+    fill: #111;
+    margin-left: 2px;
+  }
+
+  /* Premium Features Section */
+  .premium-section {
+    background: #f8f9fa;
+    padding: 5rem 2.5rem;
+  }
+  .section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+  .section-header h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #111;
+    margin: 0 0 1rem 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .section-header p {
+    font-size: 1.1rem;
+    color: #666;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .feature-item {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 2.5rem;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  }
+  .feature-item:hover {
+    border-color: #111;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    transform: translateY(-4px);
+  }
+  .feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+  }
+  .feature-item h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 1rem 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .feature-item p {
+    font-size: 1rem;
+    color: #666;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.6;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .pro-tag {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: #111;
+    color: #fff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  /* Upgrade CTA Section */
+  .upgrade-cta {
+    background: #111;
+    color: #fff;
+    padding: 4rem 2.5rem;
+    text-align: center;
+  }
+  .cta-content {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .cta-content h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 1rem 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .cta-content p {
+    font-size: 1.2rem;
+    color: #ccc;
+    margin: 0 0 2rem 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .primary-cta, .secondary-cta {
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .primary-cta {
+    background: #fff;
+    color: #111;
+    border: none;
+    box-shadow: 0 4px 16px rgba(255,255,255,0.2);
+  }
+  .primary-cta:hover {
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255,255,255,0.3);
+  }
+  .secondary-cta {
+    background: transparent;
+    color: #fff;
+    border: 2px solid #fff;
+  }
+  .secondary-cta:hover {
+    background: #fff;
+    color: #111;
+    transform: translateY(-2px);
+  }
+  .trial-info {
+    font-size: 0.9rem;
+    color: #999;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .elegant-hero {
+      padding: 2rem 1.5rem;
+    }
+    .hero-content {
+      flex-direction: column;
+      text-align: center;
+      gap: 2rem;
+    }
+    .hero-text h1 {
+      font-size: 2.5rem;
+    }
+    .hero-subtitle {
+      font-size: 1.1rem;
+    }
+    .hero-stats {
+      justify-content: center;
+      gap: 2rem;
+    }
+    .video-frame {
+      width: 100%;
+      max-width: 400px;
+      height: 250px;
+    }
+    .premium-section {
+      padding: 3rem 1.5rem;
+    }
+    .section-header h2 {
+      font-size: 2rem;
+    }
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+    .upgrade-cta {
+      padding: 3rem 1.5rem;
+    }
+    .cta-content h2 {
+      font-size: 2rem;
+    }
+    .cta-buttons {
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+  }
+
+  /* Modal Card Styles */
+  .modal-card {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border: 2px solid #111;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    width: 400px;
+    min-width: 0;
+    max-width: 90vw;
+    min-height: 0;
+    max-height: 90vh;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    padding: 1.2rem;
+    z-index: 99999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s cubic-bezier(.4,0,.2,1), visibility 0.25s cubic-bezier(.4,0,.2,1);
+  }
+  .modal-card.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .modal-content {
+    position: relative;
+  }
+  .close-modal {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    background: none;
+    border: none;
+    color: #111;
+    font-size: 1.3rem;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .close-modal:hover {
+    color: #e00;
+  }
+  .modal-content h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 1rem 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .modal-content p {
+    font-size: 1rem;
+    color: #666;
+    margin: 0;
+    line-height: 1.5;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .contact-info {
+    margin-top: 1.5rem !important;
+    font-size: 0.95rem !important;
+    color: #888 !important;
+  }
+  .contact-link {
+    color: #111;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+  }
+  .contact-link:hover {
+    color: #666;
+    text-decoration: underline;
+  }
+  
+  /* Premium Features Modal Styles */
+  .premium-features-content {
+    text-align: center;
+    padding: 0;
+  }
+  .premium-header {
+    margin-bottom: 2rem;
+  }
+  .premium-icon {
+    margin-bottom: 1rem;
+  }
+  .premium-header h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 0.5rem;
+  }
+  .premium-header p {
+    color: #666;
+    font-size: 1rem;
+  }
+  .premium-features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+  }
+  .premium-features-list .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-align: left;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #eee;
+  }
+  .premium-features-list .feature-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #eee;
+  }
+  .premium-features-list .feature-text h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111;
+    margin: 0 0 0.3rem 0;
+  }
+  .premium-features-list .feature-text p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+  }
+  .premium-cta {
+    margin-top: 1.5rem;
+  }
+  .upgrade-btn {
+    background: linear-gradient(90deg, #232323 80%, #444 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+  }
+  .upgrade-btn:hover {
+    background: linear-gradient(90deg, #111 80%, #232323 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(34,34,34,0.13);
+  }
+</style>
+
+<div class="layout-root">
+  <div class="page-flex">
+    <div class="sidebar">
+      <div class="sidebar-logo">STUDIO</div>
+      <div class="sidebar-tools">
+        <a href="{% url 'create' %}" class="create-btn-small" style="text-decoration:none; margin-bottom: 1.2rem; margin-top: 0.5rem;">
+          <span style="font-size:1.1em;">＋</span> Create
+        </a>
+        <a href="{% url 'library' %}" class="sidebar-tool-btn active" style="text-decoration:none;">
+          <span class="icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="16" height="16" rx="2" stroke="#111" stroke-width="2"/>
+              <circle cx="14" cy="6" r="1.5" fill="#111"/>
+              <path d="M4 14L7 10L10 12L13 9L16 14" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          Library
+          <span style="margin-right: 2px; font-size: 0.65rem; color: #fff; background: #f7b500; padding: 1px 4px; border-radius: 3px; font-weight: 700; letter-spacing: 0.02em;">PRO</span>
+        </a>
+        <button class="sidebar-tool-btn" id="search-btn" type="button" style="margin-bottom: 1rem;">
+          <span class="icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="8" r="6" stroke="#111" stroke-width="2"/>
+              <line x1="12" y1="12" x2="16" y2="16" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          Search
+          <span style="margin-right: 2px; font-size: 0.65rem; color: #fff; background: #f7b500; padding: 1px 4px; border-radius: 3px; font-weight: 700; letter-spacing: 0.02em;">PRO</span>
+        </button>
+      </div>
+      <div class="sidebar-section-label" style="position: relative; left: 33px;">Main</div>
+      <div class="sidebar-buttons" style="margin-top: 20px;">
+        <a href="{% url 'projects' %}" class="sidebar-btn"><span>Your Projects</span></a>
+        <a href="{% url 'main' %}" class="sidebar-btn"><span>Home</span></a>
+        <a href="{% url 'profile' %}" class="sidebar-btn"><span>Profile</span></a>
+        <a href="{% url 'settings' %}" class="sidebar-btn"><span>Settings</span></a>
+      </div>
+      <div class="sidebar-extra-section">
+        <div class="sidebar-section-label" style="position: relative; left: 34px; margin-bottom: 15px;">Support</div>
+        <a href="{% url 'help_center' %}" class="sidebar-btn"><span>Help Center</span></a>
+        <a href="https://codingeditor.slack.com/archives/C097C03BCA1" class="sidebar-btn"><span>Community</span></a>
+        <a  href="{% url 'logout' %}" type="button" class="sidebar-btn" id="logout-btn"><span>Logout</span></a>
+      </div>
+      <div class="sidebar-bottom">
+        <hr class="sidebar-divider" />
+        <a class="sidebar-logout" href="{% url 'main' %}" style="width: 148px !important; margin-right: 3px;">Home</a>
+        <div class="sidebar-actions-row">
+          <a class="sidebar-home" title="Home" href="{% url 'main' %}">
+            <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 22L24 8L40 22" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 20V40C10 41.1046 10.8954 42 12 42H36C37.1046 42 38 41.1046 38 40V20" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="18" y="30" width="12" height="12" rx="2" stroke="currentColor" stroke-width="3"/>
+            </svg>
+          </a>
+          <a href="{% url 'index' %}" class="sidebar-logout-icon" id="logout-btn-icon" title="Logout">
+            <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="8" width="28" height="32" rx="3" stroke="currentColor" stroke-width="3"/>
+              <path d="M14 24H34" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <path d="M28 18L34 24L28 30" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <button class="sidebar-help" id="advice-btn" title="Advice">?</button>
+        </div>
+      </div>
+    </div>
+    <div class="layout-root">
+      <div class="page-flex">
+        <div class="sidebar">
+          <div class="sidebar-logo" style="font-weight: 3000 !important;">STUDIO</div>
+          <div class="sidebar-tools">
+            <a href="{% url 'create' %}" class="create-btn-small" style="text-decoration:none; margin-bottom: 1.2rem; margin-top: 0.5rem;">
+              <span style="font-size:1.1em;">＋</span> Create
+            </a>
+            <a href="{% url 'library' %}" class="sidebar-tool-btn active" style="text-decoration:none;">
+              <span class="icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="2" y="2" width="16" height="16" rx="2" stroke="#111" stroke-width="2"/>
+                  <circle cx="14" cy="6" r="1.5" fill="#111"/>
+                  <path d="M4 14L7 10L10 12L13 9L16 14" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              Library
+              <span style="margin-right: 2px; font-size: 0.65rem; color: #fff; background: #f7b500; padding: 1px 4px; border-radius: 3px; font-weight: 700; letter-spacing: 0.02em;">PRO</span>
+            </a>
+            <button class="sidebar-tool-btn" id="search-btn" type="button" style="margin-bottom: 1rem;">
+              <span class="icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="8" cy="8" r="6" stroke="#111" stroke-width="2"/>
+                  <line x1="12" y1="12" x2="16" y2="16" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
+              Search
+              <span style="margin-right: 2px; font-size: 0.65rem; color: #fff; background: #f7b500; padding: 1px 4px; border-radius: 3px; font-weight: 700; letter-spacing: 0.02em;">PRO</span>
+            </button>
+          </div>
+          <div class="sidebar-section-label" style="position: relative; left: 33px;">Main</div>
+          <div class="sidebar-buttons" style="margin-top: 20px;">
+            <a href="{% url 'projects' %}" class="sidebar-btn"><span>Your Projects</span></a>
+            <a href="{% url 'main' %}" class="sidebar-btn"><span>Home</span></a>
+            <a href="{% url 'profile' %}" class="sidebar-btn"><span>Profile</span></a>
+            <a href="{% url 'settings' %}" class="sidebar-btn"><span>Settings</span></a>
+          </div>
+          <div class="sidebar-extra-section">
+            <div class="sidebar-section-label" style="position: relative; left: 34px; margin-bottom: 15px;">Support</div>
+            <a href="{% url 'help_center' %}" class="sidebar-btn"><span>Help Center</span></a>
+            <a href="https://codingeditor.slack.com/archives/C097C03BCA1" class="sidebar-btn"><span>Community</span></a>
+            <button type="button" class="sidebar-btn" id="logout-btn"><span>Logout</span></button>
+          </div>
+          <div class="sidebar-bottom">
+            <hr class="sidebar-divider" />
+            <a class="sidebar-logout" href="{% url 'main' %}" style="width: 148px !important; margin-right: 3px;">Home</a>
+            <div class="sidebar-actions-row">
+              <a class="sidebar-home" title="Home" href="{% url 'main' %}">
+                <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 22L24 8L40 22" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 20V40C10 41.1046 10.8954 42 12 42H36C37.1046 42 38 41.1046 38 40V20" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="18" y="30" width="12" height="12" rx="2" stroke="currentColor" stroke-width="3"/>
+                </svg>
+              </a>
+              <button class="sidebar-logout-icon" id="logout-btn-icon" title="Logout" type="button">
+                <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="10" y="8" width="28" height="32" rx="3" stroke="currentColor" stroke-width="3"/>
+                  <path d="M14 24H34" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  <path d="M28 18L34 24L28 30" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="sidebar-help" id="advice-btn" title="Advice">?</button>
+            </div>
+          </div>
+        </div>  
+    
+    <div class="settings-page" style="position: relative; left: 14rem; top: 1rem;">
+        <!-- HEADER -->
+        <header class="settings-header">
+          <h1>Account Settings</h1>
+          <p>Manage your profile details, security, preferences, and support options</p>
+        </header>
+      
+        <!-- SECTION: PROFILE -->
+        <section class="settings-section">
+          <h2>Profile Information</h2>
+          <div class="profile-card">
+            <div class="profile-photo" style="text-align: center;">
+              <form action="{% url 'upload_profile_picture' %}" 
+                    method="post" 
+                    enctype="multipart/form-data" 
+                    id="profile-picture-form">
+                  {% csrf_token %}
+          
+                  <!-- Profile Picture Circle -->
+                  <div style="
+                      width: 140px; 
+                      height: 140px; 
+                      border-radius: 50%; 
+                      overflow: hidden; 
+                       
+                      margin: 0 auto 12px auto;
+                  ">
+                      <img id="profile-preview" 
+                           src="{{ request.user.profile.profile_picture.url|default:'/static/images/default-avatar.png' }}" 
+                           alt="Profile Picture" 
+                           style="width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+          
+                  <!-- File Input (hidden) -->
+                  <input type="file" id="profile-input" name="profile_picture" 
+                         accept="image/png,image/jpeg" 
+                         style="display: none;">
+          
+                  <!-- Upload Button -->
+                  <label for="profile-input" style="
+                      display: inline-block; 
+                      background: #000; 
+                      color: #fff; 
+                      padding: 8px 18px; 
+                      border-radius: 6px; 
+                      font-family: 'Montserrat', sans-serif; 
+                      font-size: 0.9rem; 
+                      cursor: pointer; 
+                      transition: background 0.3s ease;
+                  " 
+                  onmouseover="this.style.background='#333';" 
+                  onmouseout="this.style.background='#000';">
+                      {% if request.user.profile.profile_picture %}
+                          Change Photo
+                      {% else %}
+                          Upload Photo
+                      {% endif %}
+                  </label>
+              </form>
+          </div>
+          
+          <script>
+          document.getElementById("profile-input").addEventListener("change", function () {
+              const file = this.files[0];
+              if (file) {
+                  const preview = document.getElementById("profile-preview");
+                  preview.src = URL.createObjectURL(file);
+                  document.getElementById("profile-picture-form").submit();
+              }
+          });
+          </script>
+            <div class="profile-details" style="position: relative; left: 3rem; bottom: 1rem;">
+              <div class="detail">
+                <label>Full Name:</label>
+                <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+              </div>
+              <div class="detail">
+                <label>Username:</label>
+                <span>@{{ request.user.username }}</span>
+              </div>
+              <div class="detail">
+                <label>Email:</label>
+                <span>{{ request.user.email }}</span>
+              </div>
+              <div class="detail">
+                <label>Member Since:</label>
+                <span>{{ request.user.date_joined|date:"F j, Y" }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      
+        <!-- SECTION: ACTIVITY -->
+        <section class="settings-section">
+          <h2>Activity Overview</h2>
+          <div class="stats-grid">
+            <div class="stat">
+              <span class="stat-value">{{ pens_count }}</span>
+              <span class="stat-label">Projects</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">{{ total_views }}</span>
+              <span class="stat-label">Total Views</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">{{ pens }}</span>
+              <span class="stat-label">Posts</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">{{ abc }}</span>
+              <span class="stat-label">Edits</span>
+            </div>
+          </div>
+        </section>
+      
+        <!-- SECTION: SECURITY -->
+        <section class="settings-section">
+          <h2>Security</h2>
+          <div class="security-options">
+            <div class="security-item">
+              <span>Change Password</span>
+              <a href="{% provider_login_url 'google' %}" class="security-link">Change</a>
+            </div>
+            <div class="security-item">
+              <span>Switch Account</span>
+              <a href="{% url 'switch_account' %}" class="security-link">Switch</a>
+            </div>
+           
+          </div>
+        </section>
+      
+        <!-- SECTION: PREFERENCES -->
+        <section class="settings-section">
+          <h2>Preferences</h2>
+          <div class="preference-item">
+            <label>Theme:</label>
+            <label style="
+        color: #555;">Light</label>
+          </div>
+          <div class="preference-item">
+            <label>Email Notifications:</label>
+            <label >
+              Receive updates
+              <input type="checkbox" checked   style="position: relative;  top: 2px; left: 2px; color: black;">
+          </label>
+          </div>
+          <div class="preference-item">
+            <label>Language:</label>
+            <label style='
+            color: #555;'>English</label>
+          </div>
+        </section>
+      
+        <!-- SECTION: SUPPORT -->
+        <section class="settings-section">
+          <h2>Support & Help</h2>
+          <div class="support-links">
+            <a href="{% url 'help_center' %}">Contact Us</a>
+            <a href="{% url 'help_center' %}">FAQs</a>
+            <a href="{% url 'help_center' %}">Report an Issue</a>
+          </div>
+        </section>
+      
+        <!-- SECTION: DANGER ZONE -->
+        <section class="settings-section danger-zone">
+          <h2>Account Actions</h2>
+          <p>These actions are permanent and cannot be undone.</p>
+          <button class="logout-btn" onclick="window.location.href='{% url 'logout' %}'">Logout</button>
+          <button class="delete-btn" id="deleteAccountBtn">Delete Account</button>
+    
+          <div id="deleteModal" class="modal">
+            <div class="modal-content">
+              <button class="close-btn" id="closeModal">&times;</button>
+              <h2>Delete Account</h2>
+              <p>Are you sure you want to delete your account? This action is irreversible.</p>
+              <input id="confirmText" type="text" placeholder="Type 'Delete' to confirm">
+              <div class="btn-group">
+                <button id="cancelDelete" class="cancel-btn">Cancel</button>
+                <button id="confirmDelete" class="delete-btn-modal" disabled>Delete</button>
+              </div>
+            </div>
+          </div>
+          
+          <style>
+            
+          .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+          }
+          
+          .modal-content {
+            background: #fff;
+            border-radius: 8px;
+            max-width: 400px;
+            margin: 10% auto;
+            padding: 20px;
+            position: relative;
+            font-family: sans-serif;
+          }
+          
+          .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            cursor: pointer;
+          }
+          
+          .modal-content h2 {
+            margin-top: 0;
+          }
+          
+          .modal-content input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #000;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+          }
+          
+          .btn-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 16px;
+          }
+          
+          .cancel-btn {
+            background: #fff;
+            border: 1px solid #000;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+          }
+          
+          .delete-btn-modal {
+            background: #d00;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+          }
+          
+          .delete-btn-modal:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+          }
+          </style>
+          
+          <script>
+          // Get CSRF token from cookies
+          function getCookie(name) {
+              let cookieValue = null;
+              if (document.cookie && document.cookie !== "") {
+                  const cookies = document.cookie.split(";");
+                  for (let cookie of cookies) {
+                      cookie = cookie.trim();
+                      if (cookie.startsWith(name + "=")) {
+                          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                          break;
+                      }
+                  }
+              }
+              return cookieValue;
+          }
+          
+          // Elements
+          const modal = document.getElementById("deleteModal");
+          const openBtn = document.getElementById("deleteAccountBtn");
+          const closeBtn = document.getElementById("closeModal");
+          const cancelBtn = document.getElementById("cancelDelete");
+          const confirmInput = document.getElementById("confirmText");
+          const confirmBtn = document.getElementById("confirmDelete");
+          
+          // Open modal
+          openBtn.addEventListener("click", () => {
+            modal.style.display = "block";
+          });
+          
+          // Close modal
+          closeBtn.addEventListener("click", () => {
+            modal.style.display = "none";
+          });
+          cancelBtn.addEventListener("click", () => {
+            modal.style.display = "none";
+          });
+          
+          // Enable delete button when input matches
+          confirmInput.addEventListener("input", () => {
+            confirmBtn.disabled = confirmInput.value.trim() !== "Delete";
+          });
+          
+          // Send delete request
+          confirmBtn.addEventListener("click", () => {
+            fetch("/delete-account/", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                }
+            }).then(response => {
+                if (response.ok) {
+                  window.location.href = "{% url 'index' %}";
+                }
+            });
+          });
+          </script>
+      
+      <style>
+      html, body {
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        letter-spacing: 0.3px;
+        margin: 0;
+        padding: 0;
+      }
+    
+      
+      /* Settings page labels and titles */
+      .settings-page h1, 
+      .settings-page h2, 
+      .settings-page label, 
+      .settings-page p {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+      }
+
+
+      .page-flex {
+   max-width: 1280px;
+    flex-direction: row;
+    height: auto;        /* shrink to content */
+    min-height: unset;   /* remove forced minimum */
+    background: #fff;
+}
+  
+        .stat {
+        display: flex;
+        flex-direction: column; /* Stack vertically */
+        align-items: center; /* Center horizontally */
+        justify-content: center;
+        padding: 1rem;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+    
+    .stat-value {
+        display: block;
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #555;
+    }
+        .settings-header p {
+          color: #555;
+          font-size: 0.95rem;
+        }
+        .settings-section {
+          margin-top: 2rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid #eee;
+        }
+        h2 {
+          font-size: 1.25rem;
+          margin-bottom: 1rem;
+        }
+        .profile-card {
+          display: flex;
+          gap: 2rem;
+          align-items: center;
+        }
+        .profile-photo img {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+        .change-photo-btn {
+          margin-top: 0.5rem;
+          font-size: 0.8rem;
+          border: 1px solid #000;
+          padding: 0.3rem 0.6rem;
+          background: #fff;
+          cursor: pointer;
+        }
+        .profile-details .detail {
+          margin-bottom: 0.75rem;
+        }
+        .profile-details label {
+          font-size: 0.85rem;
+          color: #666;
+        }
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
+          gap: 1rem;
+        }
+        .stat {
+          background: #fafafa;
+          padding: 1rem;
+          border-radius: 8px;
+          text-align: center;
+        }
+        .stat-value {
+          font-size: 1.4rem;
+          font-weight: bold;
+        }
+        .security-options .security-item {
+          display: flex;
+          justify-content: space-between;
+          padding: 0.75rem 0;
+          border-bottom: 1px solid #eee;
+        }
+        .security-link {
+          color: #000;
+          text-decoration: underline;
+        }
+        .preference-item {
+          margin-bottom: 1rem;
+        }
+        .support-links a {
+          display: block;
+          margin-bottom: 0.5rem;
+          color: #000;
+          text-decoration: underline;
+        }
+        .danger-zone {
+          border-top: 2px solid #f00;
+          padding-top: 1.5rem;
+        }
+        .logout-btn, .delete-btn {
+      display: inline-block;
+      margin-right: 1rem;
+      padding: 0.6rem 1rem;
+      border: 1px solid #000;
+      background: #fff;
+      cursor: pointer;
+      transition: background 0.15s ease-in, color 0.15s ease-in;
+    }
+    
+    /* Logout button hover: black background, white text */
+    .logout-btn:hover {
+      background: #000;
+      color: #fff;
+    }
+    
+    /* Delete button default style */
+    .delete-btn {
+      border-color: #d00;
+      color: #d00;
+    }
+    
+    /* Delete button hover: red background, white text */
+    .delete-btn:hover {
+      background: #d00;
+      color: #fff;
+    }
+      </style>
+  
+    {% endblock %}

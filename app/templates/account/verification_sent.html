@@ -1,0 +1,60 @@
+{% extends "app/base.html" %}
+{% load i18n %}
+{% load account %}
+
+{% block title %}{% trans "Verify Your Email" %}{% endblock %}
+
+{% block body %}
+<section class="d-flex justify-content-center align-items-center bg-white" style="min-height: 100vh;">
+    <div class="card border-0 shadow-sm p-4 rounded-4" style="max-width: 420px; width: 100%;">
+
+        <!-- Title -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-dark mb-2" style="font-size: 1.8rem;">
+                {% trans "Verify Your Email Address" %}
+            </h2>
+            <p class="text-secondary" style="font-size: 0.95rem;">
+                {% trans "We have sent a verification email to your inbox. Click the link in that email to continue." %}
+            </p>
+        </div>
+
+        <!-- Resend Verification Email Button -->
+        <form method="post" action="{% url 'account_email' %}">
+            {% csrf_token %}
+            <input type="hidden" name="email" value="{{ user.email }}">
+            <button type="submit"
+                    class="btn w-100 rounded-4 py-2 border border-dark"
+                    style="background-color: black; color: white; font-weight: 600; letter-spacing: 0.3px;">
+                {% trans "Resend Verification Email" %}
+            </button>
+        </form>
+
+        <!-- Decline Button -->
+        <form method="get" action="{% url 'account_logout' %}" class="mt-3">
+            <button type="submit"
+                    class="btn w-100 rounded-4 py-2 border border-dark"
+                    style="background-color: white; color: black; font-weight: 600; letter-spacing: 0.3px;">
+                {% trans "Decline" %}
+            </button>
+        </form>
+
+    </div>
+</section>
+
+<!-- Hover Styles -->
+<style>
+    button:hover {
+        transition: all 0.3s ease;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    button:hover[style*="background-color: black"] {
+        background-color: white !important;
+        color: black !important;
+    }
+    button:hover[style*="background-color: white"] {
+        background-color: black !important;
+        color: white !important;
+    }
+</style>
+{% endblock %}

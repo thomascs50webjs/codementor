@@ -1,0 +1,85 @@
+{% extends "app/base.html" %}
+{% block title %}Projects - STUDIO{% endblock %}
+
+{% block body %}
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">STUDIO</div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-section-title">Workspace</div>
+      <a href="{% url 'main' %}" class="nav-item">Dashboard</a>
+      <a href="{% url 'projects' %}" class="nav-item active">Projects</a>
+      <a href="{% url 'create' %}" class="nav-item">Create</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Tools</div>
+      <a href="{% url 'index' %}" class="nav-item">Home</a>
+      <a href="#" class="nav-item">Templates</a>
+      <a href="#" class="nav-item">Settings</a>
+    </div>
+  </div>
+</nav>
+
+<section style="margin-left: 250px; padding: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>All Projects</h2>
+    {% if user.is_authenticated %}
+      <span style="color: #666;">Welcome, {{ user.username }}</span>
+    {% endif %}
+  </div>
+
+  {% if postPagePro %}
+    <div class="d-flex flex-wrap">
+      {% for pen in postPagePro %}
+        <div class="card mx-3 my-3" style="margin-bottom: 20px; border-radius: 6px; overflow: hidden;">
+          <form action="{% url 'edit_pen' pen.id %}" method="get" style="margin:0; padding:0; border:none;">
+            <button type="submit" style="all:unset; cursor:pointer; display:block; width:100%;">
+              <iframe
+                class="pen-preview"
+                srcdoc="{{ pen.html_code }}<style>{{ pen.css_code }}</style><script>{{ pen.js_code }}</script>"
+                style="width: 100%; border: none;"
+                title="Click to edit code"
+              ></iframe>
+            </button>
+          </form>
+          <div style="padding: 10px;">
+            <h4>{{ pen.title|default:"Untitled" }}</h4>
+            <p>Created: {{ pen.created_at|date:"M d, Y" }}</p>
+            <p>Updated: {{ pen.updated_at|date:"M d, Y" }}</p>
+            <form action="{% url 'edit_pen' pen.id %}" method="get" style="text-align: center; margin: 8px 0;">
+              <button type="submit" style="padding: 6px 12px; border: 1px solid black; background: none; border-radius: 4px; cursor: pointer;">
+                Edit Code
+              </button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    
+    <div style="width: 100%; margin-top: 2rem; text-align: center;">
+      {% if postPagePro.has_previous %}
+        <a href="?page={{ postPagePro.previous_page_number }}"
+           style="all: unset; cursor: pointer; color: black; font-size: 16px; text-decoration: underline; margin-right: 1rem;">
+          ← Previous
+        </a>
+      {% endif %}
+      {% if postPagePro.has_next %}
+        <a href="?page={{ postPagePro.next_page_number }}"
+           style="all: unset; cursor: pointer; color: black; font-size: 16px; text-decoration: underline;">
+          Next →
+        </a>
+      {% endif %}
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 2rem;">
+      <h3>No projects yet</h3>
+      <p>Start creating your first code project to see it here.</p>
+      <a href="{% url 'create' %}?reset_title=1" style="color: black; text-decoration: underline;">Create Your First Project</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

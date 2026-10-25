@@ -1,0 +1,795 @@
+{% extends "app/base.html" %}
+{% block title %}Profile - STUDIO{% endblock %}
+
+{% block body %}
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .layout-root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+  }
+  .page-flex {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+    background: #fff;
+  }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 190px;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #fff;
+    z-index: 10;
+    border-right: 1.5px solid #eee;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar::-webkit-scrollbar {
+    width: 8px;
+    background: #f7f7f7;
+  }
+  .sidebar::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 6px;
+  }
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+  }
+
+  .sidebar-logo {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #111;
+    letter-spacing: 0.12em;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    margin-top: 2rem;
+  }
+  .sidebar-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+    margin-top: 0.7rem;
+    align-items: flex-start;
+    width: 100%;
+    padding-left: 0;
+  }
+  .create-btn-small {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    padding: 7px 20px;
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: none;
+    box-shadow: none;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    min-width: 70px;
+    text-decoration: none;
+  }
+  .create-btn-small:hover {
+    background: #111;
+    color: #fff;
+  }
+  .sidebar-tool-btn {
+    background: #fff;
+    color: #111;
+    border: none;
+    border-radius: 6px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.95rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    color: #111;
+    cursor: pointer;
+    padding: 8px 0 8px 8%;
+    transition: none;
+    box-shadow: none;
+    width: 85%;
+    justify-content: flex-start;
+    margin-left: 20px;
+    text-align: left;
+    text-decoration: none !important;
+  }
+  .sidebar-tool-btn:hover, .sidebar-tool-btn:active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 10px;
+    box-shadow: none;
+    text-decoration: none !important;
+    padding-left: 8%;
+    margin-left: 20px;
+    width: 85%;
+    text-align: left;
+  }
+  .sidebar-section-label {
+    font-size: 0.92rem;
+    color: #888;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    margin-top: -5px;
+  }
+  .sidebar-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 0.7rem;
+  }
+  .sidebar-btn {
+    background: #fff;
+    color: #111;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    width: 85%;
+    text-align: left;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.02em;
+    transition: color 0.2s, transform 0.18s;
+    cursor: pointer;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+    padding-left: 8%;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-left: 20px;
+    text-decoration: none !important;
+  }
+  .sidebar-btn.active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 10px;
+    box-shadow: none;
+    text-decoration: none !important;
+  }
+  .sidebar-btn::before {
+    display: none;
+  }
+  .sidebar-btn:hover, .sidebar-btn.active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 6px;
+    text-decoration: none !important;
+    box-shadow: none;
+    transform: none;
+    transition: background 0.18s, color 0.18s;
+  }
+  .sidebar-btn span {
+    position: relative;
+    z-index: 1;
+  }
+  .sidebar-extra-section {
+    margin-top: 1.5rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+  .sidebar-extra-section .sidebar-btn {
+    align-items: flex-start;
+    text-align: left;
+    justify-content: flex-start;
+    padding-left: 8%;
+    margin-left: 20px;
+  }
+  .sidebar-bottom {
+    margin-top: auto;
+    width: 100%;
+    padding-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+    background: #fff;
+  }
+  .sidebar-divider {
+    width: 70%;
+    height: 1px;
+    background: #eee;
+    margin: 1.2rem 0 0.7rem 0;
+    border: none;
+  }
+  .sidebar-logout {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    padding: 8px 0;
+    width: 75%;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.97rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s, border 0.18s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    text-decoration: none;
+  }
+  .sidebar-logout:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+    box-shadow: 0 2px 8px rgba(34,34,34,0.10);
+  }
+  .sidebar-actions-row {
+    display: flex;
+    gap: 1rem;
+    margin-right: 3px;
+    margin-top: 0.5rem;
+  }
+  .sidebar-home, .sidebar-help, .sidebar-logout-icon {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    text-decoration: none;
+    outline: none;
+  }
+  .sidebar-home:hover, .sidebar-help:hover, .sidebar-logout-icon:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+  }
+  .sidebar-home:hover svg, .sidebar-logout-icon:hover svg {
+    stroke: #fff;
+  }
+  .sidebar-help {
+    border-radius: 0;
+  }
+  .sidebar-logout-icon {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    border-radius: 0;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    text-decoration: none;
+    outline: none;
+  }
+  .sidebar-logout-icon:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+  }
+  .sidebar-logout-icon svg {
+    stroke: #111;
+    transition: none;
+  }
+  .sidebar-logout-icon:hover svg {
+    stroke: #111;
+  }
+  .main-content {
+    flex: 1 1 0;
+    min-width: 0;
+    background: #fff;
+    min-height: 100%;
+    margin-left: 180px;
+    padding: 0;
+  }
+
+  /* Profile Specific Styles */
+  .profile-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-bottom: 1px solid #eee;
+    padding: 3rem 2rem 2rem 2rem;
+    margin-bottom: 2rem;
+  }
+  .profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .profile-intro {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #111 0%, #333 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+  .profile-info {
+    flex: 1;
+  }
+  .profile-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+  }
+  .profile-username {
+    font-size: 1.1rem;
+    color: #666;
+    margin: 0 0 1rem 0;
+    font-weight: 500;
+  }
+  .profile-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.5rem;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+  }
+  .stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0.25rem 0 0 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .profile-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .profile-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: 2px solid;
+  }
+  .profile-btn.primary {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+  }
+  .profile-btn.primary:hover {
+    background: #000;
+    border-color: #000;
+    transform: translateY(-1px);
+  }
+  .profile-btn.secondary {
+    background: #fff;
+    color: #111;
+    border-color: #ddd;
+  }
+  .profile-btn.secondary:hover {
+    background: #f8f9fa;
+    border-color: #111;
+  }
+
+  .profile-content {
+    padding: 0 2rem 2rem 2rem;
+  }
+  .content-section {
+    margin-bottom: 3rem;
+  }
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 1.5rem 0;
+    letter-spacing: -0.01em;
+  }
+  .recent-projects {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  .project-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .project-card:hover {
+    border-color: #111;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
+  .project-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111;
+    margin: 0 0 0.5rem 0;
+  }
+  .project-date {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #666;
+  }
+  .empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  .empty-state-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+  }
+  .empty-state-text {
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+    }
+    .sidebar {
+      display: none;
+    }
+    .profile-intro {
+      flex-direction: column;
+      text-align: center;
+    }
+    .profile-stats {
+      justify-content: center;
+    }
+    .recent-projects {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="layout-root">
+  <div class="page-flex">
+    <div class="sidebar">
+      <div class="sidebar-logo">STUDIO</div>
+      <div class="sidebar-tools">
+        <a href="{% url 'create' %}" class="create-btn-small" style="text-decoration:none; margin-bottom: 1.2rem; margin-top: 0.5rem;">
+          <span style="font-size:1.1em;">＋</span> Create
+        </a>
+        <a href="{% url 'library' %}" class="sidebar-tool-btn" style="text-decoration:none;">
+          <span class="icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="16" height="16" rx="2" stroke="#111" stroke-width="2"/>
+              <circle cx="14" cy="6" r="1.5" fill="#111"/>
+              <path d="M4 14L7 10L10 12L13 9L16 14" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          Library
+          <span style="margin-right: 2px; font-size: 0.65rem; color: #fff; background: #f7b500; padding: 1px 4px; border-radius: 3px; font-weight: 700; letter-spacing: 0.02em;">PRO</span>
+        </a>
+        <button class="sidebar-tool-btn" id="search-btn" type="button" style="margin-bottom: 1rem;">
+          <span class="icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="8" r="6" stroke="#111" stroke-width="2"/>
+              <line x1="12" y1="12" x2="16" y2="16" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          Search
+          <span style="margin-right: 2px; font-size: 0.65rem; color: #fff; background: #f7b500; padding: 1px 4px; border-radius: 3px; font-weight: 700; letter-spacing: 0.02em;">PRO</span>
+        </button>
+      </div>
+      <div class="sidebar-section-label" style="position: relative; left: 33px;">Main</div>
+      <div class="sidebar-buttons" style="margin-top: 20px;">
+        <a href="{% url 'projects' %}" class="sidebar-btn"><span>Your Projects</span></a>
+        <a href="{% url 'main' %}" class="sidebar-btn"><span>Home</span></a>
+        <a href="{% url 'profile' %}" class="sidebar-btn active"><span>Profile</span></a>
+        <a href="{% url 'settings' %}" class="sidebar-btn"><span>Settings</span></a>
+      </div>
+      <div class="sidebar-extra-section">
+        <div class="sidebar-section-label" style="position: relative; left: 34px; margin-bottom: 15px;">Support</div>
+        <a href="{% url 'help_center' %}" class="sidebar-btn"><span>Help Center</span></a>
+        <a href="https://codingeditor.slack.com/archives/C097C03BCA1" class="sidebar-btn"><span>Community</span></a>
+        <a  href="{% url 'logout' %}" type="button" class="sidebar-btn" id="logout-btn"><span>Logout</span></a>
+      </div>
+      <div class="sidebar-bottom">
+        <hr class="sidebar-divider" />
+        <a class="sidebar-logout" href="{% url 'main' %}" style="width: 148px !important; margin-right: 3px;">Home</a>
+        <div class="sidebar-actions-row">
+          <a class="sidebar-home" title="Home" href="{% url 'main' %}">
+            <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 22L24 8L40 22" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 20V40C10 41.1046 10.8954 42 12 42H36C37.1046 42 38 41.1046 38 40V20" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="18" y="30" width="12" height="12" rx="2" stroke="currentColor" stroke-width="3"/>
+            </svg>
+          </a>
+          <a href="{% url 'index' %}" class="sidebar-logout-icon" id="logout-btn-icon" title="Logout" type="button">
+            <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="8" width="28" height="32" rx="3" stroke="currentColor" stroke-width="3"/>
+              <path d="M14 24H34" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <path d="M28 18L34 24L28 30" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <button class="sidebar-help" id="advice-btn" title="Advice">?</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="main-content">
+      <div class="profile-header">
+        <div class="profile-container">
+          <div class="profile-intro">
+            <div class="profile-photo" style="text-align:center;">
+              <form action="{% url 'upload_profile_picture' %}" 
+                    method="post" 
+                    enctype="multipart/form-data" 
+                    id="profile-picture-form">
+                  {% csrf_token %}
+          
+                  <!-- Avatar Circle -->
+                  <div style="width: 120px; height: 120px; border-radius: 50%; 
+                              overflow: hidden; 
+                              margin: 0 auto;">
+                      <img id="profile-preview" 
+                           src="{{ request.user.profile.profile_picture.url|default:'/static/images/default-avatar.png' }}" 
+                           alt="Profile Picture" 
+                           style="width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+          
+                  <!-- Hidden file input -->
+                  <input type="file" id="profile-input" name="profile_picture" 
+                         accept="image/png,image/jpeg" 
+                         style="display:none;">
+          
+                  <!-- Change Photo Button (black, full width under image) -->
+                  <button type="button" id="change-photo-btn"
+                          style="margin-top:10px; background:#000; color:#fff; 
+                                 border:none; padding:8px 14px; border-radius:6px; 
+                                 cursor:pointer; font-size:14px;">
+                      Change Photo
+                  </button>
+              </form>
+          </div>
+          
+          <script>
+              // When clicking button, trigger file input
+              document.getElementById('change-photo-btn').addEventListener('click', function () {
+                  document.getElementById('profile-input').click();
+              });
+          
+              // Preview image after selection
+              document.getElementById('profile-input').addEventListener('change', function (event) {
+                  const file = event.target.files[0];
+                  if (file) {
+                      const reader = new FileReader();
+                      reader.onload = function (e) {
+                          document.getElementById('profile-preview').src = e.target.result;
+                      };
+                      reader.readAsDataURL(file);
+          
+                      // Submit form automatically if you want
+                      // document.getElementById('profile-picture-form').submit();
+                  }
+              });
+          </script>
+          
+          <script>
+          document.getElementById("profile-input").addEventListener("change", function () {
+              const file = this.files[0];
+              if (file) {
+                  // Live preview
+                  const preview = document.getElementById("profile-preview");
+                  preview.src = URL.createObjectURL(file);
+          
+                  // Auto-submit
+                  document.getElementById("profile-picture-form").submit();
+              }
+          });
+          </script>
+          
+            <div class="profile-info">
+              <form method="post" id="username-form" style="display:flex; align-items:center; gap:8px; margin:8px 0;">
+                {% csrf_token %}
+                <h1 id="username-display" class="profile-name" 
+                    style="cursor:pointer;"
+                    onclick="startEditing()">
+                   
+                  {{ request.user.get_full_name|default:request.user.username }}
+                </h1>
+            
+                <input type="text" 
+                       name="username" 
+                       id="username-input"
+                       value="{{ request.user.username }}" 
+                       style="display:none; padding:6px; border-radius:4px; border:1px solid #ccc; min-width:180px;">
+            
+                       <button type="button" 
+            onclick="startEditing()" 
+            style="background:none; border:none; cursor:pointer;" 
+            title="Edit">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #000;position: relative; left: 20px;bottom: -1px; cursor: pointer; transition: color 0.2s; margin-right: 0.75rem; margin-top: -1px;">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+              </form>
+         
+    
+              <p class="profile-username">@{{ request.user.username }}</p>
+              <div class="profile-stats">
+                <div class="stat-item">
+                  <div class="stat-number">{{ pens_count }}</div>
+                  <div class="stat-label">Projects</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">{{ total_views }}</div>
+                  <div class="stat-label">Views</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">{{ recent_pens|length }}</div>
+                  <div class="stat-label">Recent</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+          
+          <div class="profile-actions">
+            <a href="{% url 'create' %}" class="profile-btn primary" style="margin-left: 9.5rem;">Create New Project</a>
+            <a href="{% url 'projects' %}" class="profile-btn secondary">View All Projects</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-content">
+        <div class="content-section">
+          <h2 class="section-title">Recent Projects</h2>
+          {% if recent_pens %}
+            <div class="recent-projects">
+              {% for pen in recent_pens %}
+                <div class="project-card" onclick="window.location.href='{% url 'edit_pen' pen.id %}'">
+                  <h3 class="project-title">{{ pen.title }}</h3>
+                  <p class="project-date">Created {{ pen.created_at|date:"M j, Y" }}</p>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state" style="position: relative; bottom: 50px;">
+              <div class="empty-state-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <!-- Document shape -->
+                  <path d="M6 2h24l8 8v32a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+                  <polyline points="30 2 30 10 38 10"/>
+                  <!-- Text lines -->
+                  <line x1="10" y1="20" x2="30" y2="20"/>
+                  <line x1="10" y1="26" x2="34" y2="26"/>
+                  <line x1="10" y1="32" x2="28" y2="32"/>
+                </svg>
+              </div>              <h3 class="empty-state-title">No projects yet</h3>
+              <p class="empty-state-text">Start creating your first project to see it here.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Logout Confirmation Modal -->
+<div id="logout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: #fff; padding: 2rem; border-radius: 12px; max-width: 400px; width: 90%; text-align: center;">
+    <h3 style="margin: 0 0 1rem 0; color: #111;">Logout</h3>
+    <p style="margin: 0 0 1.5rem 0; color: #666;">Are you sure you want to logout?</p>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+      <button onclick="closeLogoutModal()" style="padding: 0.75rem 1.5rem; border: 2px solid #ddd; background: #fff; color: #111; border-radius: 8px; cursor: pointer;">Cancel</button>
+      <a href="{% url 'logout' %}" style="padding: 0.75rem 1.5rem; border: 2px solid #111; background: #111; color: #fff; border-radius: 8px; text-decoration: none;">Logout</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Logout modal functionality
+    const logoutBtn = document.getElementById('logout-btn');
+    const logoutBtnIcon = document.getElementById('logout-btn-icon');
+    const logoutModal = document.getElementById('logout-modal');
+    
+    function showLogoutModal() {
+      logoutModal.style.display = 'flex';
+    }
+    
+    function closeLogoutModal() {
+      logoutModal.style.display = 'none';
+    }
+    
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', showLogoutModal);
+    }
+    
+    if (logoutBtnIcon) {
+      logoutBtnIcon.addEventListener('click', showLogoutModal);
+    }
+    
+    // Close modal when clicking outside
+    logoutModal.addEventListener('click', function(e) {
+      if (e.target === logoutModal) {
+        closeLogoutModal();
+      }
+    });
+    
+    // Make closeLogoutModal available globally
+    window.closeLogoutModal = closeLogoutModal;
+  });
+
+            function startEditing() {
+              document.getElementById('username-display').style.display = 'none';
+              const input = document.getElementById('username-input');
+              input.style.display = 'inline-block';
+              input.focus();
+            }
+            
+            document.getElementById('username-input').addEventListener('keydown', function(e) {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('username-form').submit();
+              }
+            });
+           
+</script>
+{% endblock %} 

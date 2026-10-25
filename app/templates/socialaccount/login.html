@@ -1,0 +1,99 @@
+{% extends "app/base.html" %}
+{% load i18n %}
+{% load socialaccount %}
+
+{% block title %}{% trans "Sign In" %}{% endblock %}
+
+{% block body %}
+<section class="d-flex justify-content-center align-items-center bg-white" style="min-height: 100vh;">
+    <div class="card border-0 shadow-sm p-4 rounded-4" style="max-width: 420px; width: 100%;">
+        
+        <!-- Title -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-dark mb-2" style="font-size: 1.8rem;">{% trans "Welcome Back" %}</h2>
+            <p class="text-secondary" style="font-size: 0.95rem;">
+                {% trans "Sign in to your account" %}
+            </p>
+        </div>
+
+        <!-- Login Form -->
+        <form method="post" action="{% url 'account_login' %}" class="mb-3">
+            {% csrf_token %}
+
+            <!-- Email Field -->
+            <div class="mb-3">
+                <input type="email" name="login" required
+                       placeholder="Email Address"
+                       class="form-control border border-2 rounded-4 py-2"
+                       style="font-size: 15px;">
+            </div>
+
+            <!-- Password Field -->
+            <div class="mb-3">
+                <input type="password" name="password" required
+                       placeholder="Password"
+                       class="form-control border border-2 rounded-4 py-2"
+                       style="font-size: 15px;">
+            </div>
+
+            <!-- Login Button -->
+            <button type="submit"
+                    class="btn w-100 rounded-4 py-2 border border-dark"
+                    style="background-color: black; color: white; font-weight: 600; letter-spacing: 0.3px;">
+                {% trans "Sign In" %}
+            </button>
+
+            <!-- Forgot Password Link (moved under Sign In) -->
+            <div class="text-center mt-3" style="position: relative; left: -110px;">
+                <a href="{% url 'account_reset_password' %}" class="text-decoration-none" style="font-size: 0.85rem; color: #6c757d;">
+                    {% trans "Forgot your password?" %}
+                </a>
+            </div>
+        </form>
+
+        <!-- Divider -->
+        <div class="text-center my-3">
+            <small class="text-muted">{% trans "OR" %}</small>
+        </div>
+
+        <!-- Google Sign In -->
+     <!-- Google Sign In Form -->
+<form action="{% provider_login_url 'google' %}" method="post" class="w-100 mb-0">
+    {% csrf_token %}
+    <button type="submit"
+            class="w-100 d-flex align-items-center justify-content-center rounded-4 py-2 border border-2 text-dark"
+            style="background-color: white; font-weight: 600; font-size: 15px; letter-spacing: 0.3px;">
+        <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png"
+             alt="Google logo"
+             style="width: 20px; height: 20px; margin-right: 8px;">
+        {% trans "Continue with Google" %}
+    </button>
+</form>
+
+        <!-- Register Link -->
+        <div class="text-center mt-4">
+            <small class="text-muted">
+                {% trans "Don't have an account?" %}
+                <a href="{% url 'account_signup' %}" class="text-dark fw-bold">{% trans "Sign up" %}</a>
+            </small>
+        </div>
+    </div>
+</section>
+
+<!-- Hover Styles -->
+<style>
+    button, a {
+        transition: all 0.4s ease;
+    }
+    a:hover {
+        background-color: #f8f8f8 !important;
+        color: black !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    button:hover {
+        background-color: #222 !important;
+        color: white !important;
+    }
+</style>
+{% endblock %}

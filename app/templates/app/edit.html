@@ -1,0 +1,1884 @@
+{% extends "app/base.html" %}
+{% block title %}Edit Template - STUDIO{% endblock %}
+
+{% block body %}
+{% csrf_token %}
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .layout-root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+  }
+  .page-flex {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+    background: #fff;
+  }
+
+  .main-content {
+    flex: 1 1 0;
+    min-width: 0;
+    background: #fff;
+    min-height: 100%;
+    margin-left: 0;
+    padding: 0;
+  }
+  
+  /* Navigation Header */
+  .nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+  }
+  .nav-logo {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111;
+    text-decoration: none;
+  }
+  .nav-right {
+    display: flex;
+    gap: 1.5rem;
+  }
+  .nav-link {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-link:hover {
+    color: #111;
+  }
+  
+  /* Fork-specific styles */
+  .fork-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    padding: 1.5rem 2rem;
+  }
+  .fork-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 0.5rem;
+  }
+  .fork-subtitle {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+  }
+  .fork-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0;
+    margin-top: 0.5rem;
+  }
+  .fork-badge {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .original-link {
+    color: #1976d2;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .original-link:hover {
+    text-decoration: underline;
+  }
+  .editor-container {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    background: #fff;
+    transition: all 0.3s ease;
+  }
+  
+  .editor-container.full-mode {
+    top: 0 !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9998;
+    background: #fff;
+  }
+  
+  /* Resize handle */
+  .resize-handle {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 4px;
+    height: 100%;
+    background: #1976d2;
+    cursor: col-resize;
+    z-index: 100;
+    transform: translateX(-50%);
+    transition: background 0.2s;
+  }
+  
+  .resize-handle:hover {
+    background: #1565c0;
+  }
+  
+  .resize-handle.dragging {
+    background: #0d47a1;
+  }
+  
+  /* Vertical resize handle */
+  .vertical-resize-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: transparent;
+    cursor: row-resize;
+    z-index: 100;
+    transition: all 0.2s;
+  }
+  
+  .vertical-resize-handle::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 2px;
+    background: #ccc;
+    border-radius: 1px;
+    transition: background 0.2s;
+  }
+  
+  .vertical-resize-handle:hover::before {
+    background: #999;
+  }
+  
+  .vertical-resize-handle.dragging::before {
+    background: #666;
+  }
+  .code-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #eee;
+    background: #1e1e1e;
+  }
+  .code-tabs {
+    display: flex;
+    background: #000;
+    border-bottom: 1px solid #333;
+  }
+  .code-tab {
+    padding: 0.8rem 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    color: #999;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .code-tab.active {
+    color: #fff;
+    border-bottom-color: #1976d2;
+    background: #000;
+  }
+  
+  .pro-tab {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .small-pro-badge {
+    background: #ffd700;
+    color: #000;
+    font-size: 0.5rem;
+    font-weight: 700;
+    padding: 0.05rem 0.2rem;
+    border-radius: 1px;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    margin-left: 0.3rem;
+    margin-top: -0.2rem;
+  }
+  
+  .code-fullscreen-btn {
+    margin-left: auto;
+    padding: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .code-fullscreen-btn:hover {
+    color: #fff;
+  }
+  .code-editor {
+    flex: 1;
+    padding: 1rem;
+    background: #1e1e1e;
+  }
+  .code-textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: none;
+    background: #1e1e1e !important;
+    color: #d4d4d4 !important;
+    padding: 1rem;
+    tab-size: 2;
+    caret-color: #d4d4d4;
+  }
+  .preview-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #000;
+  }
+  .preview-header {
+    padding: 1rem;
+    background: #000;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .preview-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+  }
+  .preview-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .preview-btn {
+    margin-right: 10px;
+    padding: 0.5rem 1rem;
+    background: #000;
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    color: #fff;
+    transition: all 0.2s;
+  }
+  .preview-btn:hover {
+    background: #333;
+    border-color: #555;
+  }
+  .preview-btn.primary {
+    background: #1976d2;
+    color: #fff;
+    border-color: #1976d2;
+  }
+  .preview-btn.primary:hover {
+    background: #1565c0;
+  }
+  
+  .fullscreen-icon-btn {
+    margin-left: auto;
+    padding: 0.4rem 0.6rem;
+    background: #000;
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .fullscreen-icon-btn:hover {
+    background: #333;
+    border-color: #555;
+  }
+  
+  .code-fullscreen-icon-btn {
+    margin-left: auto;
+    margin-right: 20px;
+    padding: 0.4rem 0.4rem;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .code-fullscreen-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* VS Code Dark Theme Colors for Syntax Highlighting */
+  .hljs {
+    background: #1e1e1e !important;
+    color: #d4d4d4 !important;
+  }
+  
+  .hljs-keyword {
+    color: #569cd6 !important; /* Blue for keywords */
+  }
+  
+  .hljs-string {
+    color: #ce9178 !important; /* Orange for strings */
+  }
+  
+  .hljs-comment {
+    color: #6a9955 !important; /* Green for comments */
+  }
+  
+  .hljs-function {
+    color: #dcdcaa !important; /* Yellow for functions */
+  }
+  
+  .hljs-number {
+    color: #b5cea8 !important; /* Light green for numbers */
+  }
+  
+  .hljs-operator {
+    color: #d4d4d4 !important; /* White for operators */
+  }
+  
+  .hljs-punctuation {
+    color: #d4d4d4 !important; /* White for punctuation */
+  }
+  
+  .hljs-tag {
+    color: #569cd6 !important; /* Blue for HTML tags */
+  }
+  
+  .hljs-name {
+    color: #569cd6 !important; /* Blue for tag names */
+  }
+  
+  .hljs-attr {
+    color: #9cdcfe !important; /* Light blue for attributes */
+  }
+  
+  .hljs-value {
+    color: #ce9178 !important; /* Orange for attribute values */
+  }
+  
+  .hljs-property {
+    color: #9cdcfe !important; /* Light blue for CSS properties */
+  }
+  
+  .hljs-selector {
+    color: #d7ba7d !important; /* Yellow for CSS selectors */
+  }
+  
+  .hljs-built_in {
+    color: #4ec9b0 !important; /* Teal for built-in functions */
+  }
+  
+  .hljs-literal {
+    color: #569cd6 !important; /* Blue for literals */
+  }
+  
+  .hljs-type {
+    color: #4ec9b0 !important; /* Teal for types */
+  }
+  
+  .hljs-variable {
+    color: #9cdcfe !important; /* Light blue for variables */
+  }
+  
+  .hljs-title {
+    color: #dcdcaa !important; /* Yellow for function titles */
+  }
+  
+  .hljs-params {
+    color: #9cdcfe !important; /* Light blue for parameters */
+  }
+  
+  .hljs-meta {
+    color: #569cd6 !important; /* Blue for meta */
+  }
+  
+  .hljs-section {
+    color: #c586c0 !important; /* Purple for sections */
+  }
+  
+  .hljs-deletion {
+    color: #f44747 !important; /* Red for deletions */
+  }
+  
+  .hljs-addition {
+    color: #4ec9b0 !important; /* Teal for additions */
+  }
+  
+  .hljs-emphasis {
+    font-style: italic;
+  }
+  
+  .hljs-strong {
+    font-weight: bold;
+  }
+  
+  /* Ensure textareas have proper VS Code styling */
+  #html-editor, #css-editor, #js-editor {
+    background-color: #1e1e1e !important;
+    color: #d4d4d4 !important;
+    border: none !important;
+    outline: none !important;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+    caret-color: #d4d4d4 !important;
+  }
+  
+  #code-fullscreen-html, #code-fullscreen-css, #code-fullscreen-js {
+    background-color: #1e1e1e !important;
+    color: #d4d4d4 !important;
+    border: none !important;
+    outline: none !important;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+    caret-color: #d4d4d4 !important;
+  }
+  
+  /* Selection styling */
+  #html-editor::selection, #css-editor::selection, #js-editor::selection,
+  #code-fullscreen-html::selection, #code-fullscreen-css::selection, #code-fullscreen-js::selection {
+    background: #264f78 !important;
+    color: #d4d4d4 !important;
+  }
+  
+  /* Custom scrollbar for code editors - Cursor AI style */
+  .code-textarea::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .code-textarea::-webkit-scrollbar-track {
+    background: #2d2d2d;
+    border-radius: 4px;
+  }
+  
+  .code-textarea::-webkit-scrollbar-thumb {
+    background: #4c4c4c;
+    border-radius: 4px;
+    border: 1px solid #2d2d2d;
+  }
+  
+  .code-textarea::-webkit-scrollbar-thumb:hover {
+    background: #5c5c5c;
+  }
+  
+  .code-textarea::-webkit-scrollbar-corner {
+    background: #2d2d2d;
+  }
+  
+  /* Upgrade Card Styles */
+  .upgrade-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border: 2px solid #000;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+  
+  .upgrade-card h3 {
+    color: #000;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  
+  .upgrade-card p {
+    color: #333;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+  }
+  
+  .upgrade-card .pro-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .python-logo {
+    width: 300px !important;
+    height: 300px;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQsAAAC9CAMAAACTb6i8AAAApVBMVEX////+0UI1caP+zzUkaZ/+0D0sbaK3xs7+0T/+6rL+67X+2m3/7sD///0cZp6zw87//ff+zit+m6709vb+3n9EeaX+1Vn/+/ElaZr/+ef/78T+4Ij/8culuMTi5+aIpLZRf6P/9dr+2WvS292htsptkKdjiqWTq7/CztB7mrFGeaA5cp9eiK/s7++htcLa4eL+117/6Kn+5Jxbhqasv9P+4pT+3HfWMi+YAAAD90lEQVR4nO3a23aiMBQG4GASigdQ1FqPaGu1qGMPtvX9H20IU6uGoNKyzJrwf1deJr+bJOxACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADsuevpzeO4OZvPZ7Pm0ygMGrpHpIkbjpddj9nfGGOreX2te1zX545Wnl1KsFl3Eege25UFS5YMYhfHSPforiroipqwFYUheGPd47sidxKlYK8Ws25KGAWqjKkXRTFzCVkv1aXRbeke4tXU2W66U/Wyweq6h3g1Ios/8a/WSr1+NjWP8HpEFktX/Fqr66JgWbBQ/Bqr14uCZVHqPgcvi5RTRtGyKNme6uRZzCxOQBbFzKJ7gAnFzYK0JCErbhYy+fhpfBataXhzrL4jHzOiLNzXTqxacXUPPHdBc+WxNPLeKrKwuCNwavV1jz1no8R8z+wjDWvH8d90jz5XYy9DElIWluXXdI8/R/VsUcRZOPssHHqnewa5Cc6drc5kYfG27inkZpFlrdhlwQ+ysGhP9xxykrksSvZYzmKjexI5ec5aFnEW9DALp6N7EjlZZo1C9DuPszDlIVmndP5PZRGQnn+chRnbaphxQ40ekXdCalJdmLFgjDIvnd4LIe2jtdOUXfUp69Lp1Qm5Oy4Li291TyMXs2xZsJXokEtlYfGq7mnkYp7S97cVL6wem4zEhVpFKgtTsnhXPgerxePHx8d3B6Mu+hlhOF3H3YpEFAZnwSbhiQ7N/TYRhblZsHGcRGPY7/drO5VY+W3Q8XkiClOySKwXLP7WpF+lStxJJmFMFol9ZBJVRe9V9e+nMyQLubHrRXvmPc2UhDHni4/jc6e9dEnDyhiFKedO6SIoeh8nn8mN4gxqRv9X+t6E3RDXUq6PJ7MY6p5GLtzj75DYlNz75ycvZ2FI97d5tHh6U/l9/AKGbCNyAyN6IU8esc+WhSl3Z+7tb7Mwpt0pfXvykyx8U8oiKozD7q8XkHLGLKgZh4t/XthvsqAPusefq7Br/zQL7g90jz5nwWT3AaMqC65+ZY1V73WPPXduuLiNlZJZ8G15r7JXq9WGhpyxEtwYSWRhyOXHjyTq4rNxF2kc0D3Eq0muF77EpE30tLP7iCHdiksgi73UMzinPnWQRbyfPAx7FdHnQRY8Pmv3KLL47uO1ObKw6L/T9mehskjpd371ujtOkbIgHfX1SPyQiPsCQ24ALpLWCKfVQYea9c3zeWVffUPCxc2yY1BL7xJDJ/XsSbkZ90KXa2y44vMCh1P6WaQH5Euj1rbiDy6+iN/Wtlac13VJb1jeDLbVh4fqdrApD8340BkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP5rfwFyakX230cPEwAAAABJRU5ErkJggg==');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  
+  .upgrade-btn {
+    background: #000;
+    color: #fff;
+    border: 2px solid #000;
+    padding: 0.8rem 2rem;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+  
+  .upgrade-btn:hover {
+    background: #fff;
+    color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  .close-upgrade-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  
+  .close-upgrade-btn:hover {
+    color: #000;
+  }
+  
+  .upgrade-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  
+  .preview-frame {
+    flex: 1;
+    border: none;
+    background: #000;
+  }
+  .save-status {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease;
+  }
+  .save-status.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .save-status.success {
+    background: #4caf50;
+    color: #fff;
+  }
+  .save-status.error {
+    background: #f44336;
+    color: #fff;
+  }
+  
+  /* Fullscreen Modal Styles */
+  .fullscreen-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #fff;
+    z-index: 9999;
+    display: none;
+  }
+  
+  .close-fullscreen-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #f44336;
+    color: #fff;
+    border: none;
+    padding: 0.4rem 0.9rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    z-index: 10000;
+  }
+  
+  .close-fullscreen-btn:hover {
+    background: #d32f2f;
+  }
+  
+  .fullscreen-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #fff;
+  }
+  
+  /* Code Fullscreen Modal */
+  .code-fullscreen-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #1e1e1e;
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
+  }
+  
+  .code-fullscreen-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: #000;
+    border-bottom: 1px solid #333;
+  }
+  
+  .code-fullscreen-tabs {
+    display: flex;
+    gap: 0;
+  }
+  
+  .code-fullscreen-tab {
+    padding: 0.8rem 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    color: #999;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  
+  .code-fullscreen-tab.active {
+    color: #fff;
+    border-bottom-color: #1976d2;
+    background: #000;
+  }
+  
+  .code-fullscreen-tab:hover {
+    color: #fff;
+  }
+  
+  .close-code-fullscreen-btn {
+    background: #f44336;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  
+  .close-code-fullscreen-btn:hover {
+    background: #d32f2f;
+  }
+  
+  .code-fullscreen-editor {
+    flex: 1;
+    padding: 1rem;
+    background: #1e1e1e;
+  }
+  
+  .code-fullscreen-textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: none;
+    background: #1e1e1e !important;
+    color: #d4d4d4 !important;
+    padding: 1rem;
+    tab-size: 2;
+    caret-color: #d4d4d4;
+  }
+  
+  /* Custom scrollbar for fullscreen code editors - Cursor AI style */
+  .code-fullscreen-textarea::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .code-fullscreen-textarea::-webkit-scrollbar-track {
+    background: #2d2d2d;
+    border-radius: 4px;
+  }
+  
+  .code-fullscreen-textarea::-webkit-scrollbar-thumb {
+    background: #4c4c4c;
+    border-radius: 4px;
+    border: 1px solid #2d2d2d;
+  }
+  
+  .code-fullscreen-textarea::-webkit-scrollbar-thumb:hover {
+    background: #5c5c5c;
+  }
+  
+  .code-fullscreen-textarea::-webkit-scrollbar-corner {
+    background: #2d2d2d;
+  }
+
+  /* Save Confirmation Card */
+  .save-confirmation-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .save-confirmation-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border: 2px solid #000;
+    border-radius: 0;
+    padding: 2rem 2.5rem;
+    text-align: center;
+    max-width: 450px;
+    width: 90%;
+    z-index: 1000;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .save-confirmation-card h3 {
+    color: #000;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .save-confirmation-card p {
+    color: #333;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+  }
+
+  .save-confirmation-card .btn-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .save-confirmation-card .btn {
+    padding: 0.8rem 2rem;
+    border-radius: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .save-confirmation-card .btn-primary {
+    background: #000;
+    color: #fff;
+    border: 2px solid #000;
+  }
+
+  .save-confirmation-card .btn-primary:hover {
+    background: #fff;
+    color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .save-confirmation-card .btn-secondary {
+    background: #fff;
+    color: #000;
+    border: 2px solid #000;
+  }
+
+  .save-confirmation-card .btn-secondary:hover {
+    background: #000;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+</style>
+
+<div class="layout-root">
+  <div class="page-flex">
+    <div class="main-content">
+      <!-- Navigation Header -->
+      <div class="nav-header">
+        <div class="nav-left">
+          <a href="{% url 'main' %}" class="nav-logo">STUDIO</a>
+        </div>
+        <div class="nav-right">
+          <a href="{% url 'main' %}" class="nav-link">Home</a>
+          <a href="{% url 'projects' %}" class="nav-link">Projects</a>
+          <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+          <a href="{% url 'delete_pen' pen.id %}" 
+   class="nav-link" 
+   onclick="return confirm('Are you sure you want to delete this?');">
+   Delete
+</a>
+
+      
+
+        </div>
+      </div>
+      
+      <!-- Edit Header -->
+      <div class="fork-header">
+        <h1 class="fork-title">{{ pen.title|default:"Edit Template" }}</h1>
+        <p class="fork-subtitle">
+          {% if is_owner %}
+              You're editing your own template
+          {% else %}
+              You're editing {{ pen.user.username }}'s template
+          {% endif %}
+      </p>
+        <div class="fork-info">
+          <span class="fork-badge">Edit</span>
+          <span>Created by: <a href="/" class="original-link">{{ pen.user.username|default:"You" }}</a></span>
+        </div>
+      </div>
+
+      <!-- Editor Container -->
+      <div class="editor-container">
+        <!-- Vertical Resize Handle -->
+        <div class="vertical-resize-handle" id="vertical-resize-handle"></div>
+        
+        <!-- Code Panel -->
+        <div class="code-panel">
+          <div class="code-tabs">
+            <button class="code-tab active" data-tab="html">HTML</button>
+            <button class="code-tab" data-tab="css">CSS</button>
+            <button class="code-tab" data-tab="js">JavaScript</button>
+            <button class="code-tab pro-tab" data-tab="python">
+              
+              <span>Python</span>
+              <span class="small-pro-badge">PRO</span>
+            </button>
+            <button class="code-fullscreen-icon-btn" id="code-fullscreen-btn" title="Fullscreen Code">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="code-editor">
+            <textarea id="html-editor" class="code-textarea" placeholder="Enter your HTML code here...">{{ pen.html_code|default:"" }}</textarea>
+            <textarea id="css-editor" class="code-textarea" style="display: none;" placeholder="Enter your CSS code here...">{{ pen.css_code|default:"" }}</textarea>
+            <textarea id="js-editor" class="code-textarea" style="display: none;" placeholder="Enter your JavaScript code here...">{{ pen.js_code|default:"" }}</textarea>
+            
+          </div>
+        </div>
+
+        <!-- Preview Panel -->
+         
+        <div class="preview-panel">
+          <div class="preview-header">
+            <h3 class="preview-title">Live Preview</h3>
+            <button id="previewDropdownBtn" style="display: flex; position: relative; left: 110px;align-items: center; gap: 0.5rem; background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 0.5rem 0.75rem; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: #fff; transition: all 0.2s;">
+              <span id="currentPreviewFile">HTML</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #ccc; transition: transform 0.2s;">
+                <polyline points="6,9 12,15 18,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="preview-actions">
+              <button class="preview-btn" id="full-mode-btn">Full Height</button>
+              <button class="preview-btn primary" id="save-btn">Save as New</button>
+              <button class="fullscreen-icon-btn" id="fullscreen-btn" title="Fullscreen Preview">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <iframe id="preview-frame" class="preview-frame" srcdoc="<style>html,body{margin:0;padding:0;overflow:hidden;}body{background:#fff;}</style>{{ pen.html_code|default:"" }}<style>{{ pen.css_code|default:"" }}</style><script>{{ pen.js_code|default:"" }}</script>"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Save Status Notification -->
+<div id="save-status" class="save-status"></div>
+
+<!-- Fullscreen Modal -->
+<div id="fullscreen-modal" class="fullscreen-modal">
+  <button id="close-fullscreen-btn" class="close-fullscreen-btn">Close Full Screen</button>
+  <iframe id="fullscreen-frame" class="fullscreen-frame"></iframe>
+</div>
+
+<!-- Upgrade Modal -->
+<div id="upgrade-overlay" class="upgrade-overlay">
+  <div class="upgrade-card">
+    <button class="close-upgrade-btn" id="close-upgrade-btn">&times;</button>
+    <div class="pro-icon">
+      <div class="python-logo"></div>
+    </div>
+    <h3>Unlock Python</h3>
+    <p>Build full-stack applications with Python. Access advanced features, unlimited projects, and professional development tools.</p>
+    <a href="{% url 'library' %}" class="upgrade-btn">Upgrade Now</a>
+  </div>
+</div>
+
+<!-- Save Confirmation Modal -->
+<div id="save-confirmation-overlay" class="save-confirmation-overlay">
+  <div class="save-confirmation-card">
+    <h3>Save as New Version?</h3>
+    <p>This edited version will be saved as a private template visible only to you. Your original template remains unchanged.</p>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="confirm-save-btn">Yes, Save</button>
+      <button class="btn btn-secondary" id="cancel-save-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Code Fullscreen Modal -->
+<div id="code-fullscreen-modal" class="code-fullscreen-modal">
+  <div class="code-fullscreen-header">
+    <div class="code-fullscreen-tabs">
+      <button class="code-fullscreen-tab active" data-tab="html">HTML</button>
+      <button class="code-fullscreen-tab" data-tab="css">CSS</button>
+      <button class="code-fullscreen-tab" data-tab="js">JavaScript</button>
+      <button class="code-fullscreen-tab pro-tab" data-tab="python">
+        <span>Python</span>
+        <span class="small-pro-badge">PRO</span>
+      </button>
+    </div>
+    <button id="close-code-fullscreen-btn" class="close-code-fullscreen-btn">Close</button>
+  </div>
+  <div class="code-fullscreen-editor">
+    <textarea id="code-fullscreen-html" class="code-fullscreen-textarea" placeholder="Enter your HTML code here..."></textarea>
+    <textarea id="code-fullscreen-css" class="code-fullscreen-textarea" style="display: none;" placeholder="Enter your CSS code here..."></textarea>
+    <textarea id="code-fullscreen-js" class="code-fullscreen-textarea" style="display: none;" placeholder="Enter your JavaScript code here..."></textarea>
+  </div>
+</div>
+
+<script>
+// Autocomplete data (like Cursor)
+const autocompleteData = {
+  html: [
+    { text: '!', insertText: '<!DOCTYPE html>\n<html>\n<head>\n  <title></title>\n</head>\n<body>\n  <h1></h1>\n</body>\n</html>' },
+    { text: 'div', insertText: '<div></div>' },
+    { text: 'span', insertText: '<span></span>' },
+    { text: 'p', insertText: '<p></p>' },
+    { text: 'h1', insertText: '<h1></h1>' },
+    { text: 'h2', insertText: '<h2></h2>' },
+    { text: 'h3', insertText: '<h3></h3>' },
+    { text: 'h4', insertText: '<h4></h4>' },
+    { text: 'h5', insertText: '<h5></h5>' },
+    { text: 'h6', insertText: '<h6></h6>' },
+    { text: 'a', insertText: '<a href=""></a>' },
+    { text: 'img', insertText: '<img src="" alt="">' },
+    { text: 'ul', insertText: '<ul>\n  <li></li>\n</ul>' },
+    { text: 'ol', insertText: '<ol>\n  <li></li>\n</ol>' },
+    { text: 'li', insertText: '<li></li>' },
+    { text: 'table', insertText: '<table>\n  <tr>\n    <td></td>\n  </tr>\n</table>' },
+    { text: 'tr', insertText: '<tr>\n    <td></td>\n</tr>' },
+    { text: 'td', insertText: '<td></td>' },
+    { text: 'form', insertText: '<form>\n  \n</form>' },
+    { text: 'input', insertText: '<input type="text">' },
+    { text: 'button', insertText: '<button></button>' },
+    { text: 'section', insertText: '<section>\n  \n</section>' },
+    { text: 'article', insertText: '<article>\n  \n</article>' },
+    { text: 'header', insertText: '<header>\n  \n</header>' },
+    { text: 'footer', insertText: '<footer>\n  \n</footer>' },
+    { text: 'nav', insertText: '<nav>\n  \n</nav>' },
+    { text: 'main', insertText: '<main>\n  \n</main>' },
+    { text: 'aside', insertText: '<aside>\n  \n</aside>' },
+    { text: 'body', insertText: '<body>\n  \n</body>' },
+    { text: 'br', insertText: '<br>' },
+    { text: 'hr', insertText: '<hr>' },
+    { text: 'strong', insertText: '<strong></strong>' },
+    { text: 'em', insertText: '<em></em>' },
+    { text: 'code', insertText: '<code></code>' },
+    { text: 'pre', insertText: '<pre></pre>' },
+    { text: 'textarea', insertText: '<textarea></textarea>' },
+    { text: 'select', insertText: '<select>\n  <option></option>\n</select>' },
+    { text: 'option', insertText: '<option></option>' },
+    { text: 'label', insertText: '<label></label>' },
+    { text: 'fieldset', insertText: '<fieldset>\n  \n</fieldset>' },
+    { text: 'legend', insertText: '<legend></legend>' }
+  ],
+  css: [
+    { text: 'color', insertText: 'color: ;' },
+    { text: 'background', insertText: 'background: ;' },
+    { text: 'margin', insertText: 'margin: ;' },
+    { text: 'padding', insertText: 'padding: ;' },
+    { text: 'border', insertText: 'border: ;' },
+    { text: 'width', insertText: 'width: ;' },
+    { text: 'height', insertText: 'height: ;' },
+    { text: 'font-size', insertText: 'font-size: ;' },
+    { text: 'font-family', insertText: 'font-family: ;' },
+    { text: 'font-weight', insertText: 'font-weight: ;' },
+    { text: 'text-align', insertText: 'text-align: ;' },
+    { text: 'display', insertText: 'display: ;' },
+    { text: 'position', insertText: 'position: ;' },
+    { text: 'top', insertText: 'top: ;' },
+    { text: 'left', insertText: 'left: ;' },
+    { text: 'right', insertText: 'right: ;' },
+    { text: 'bottom', insertText: 'bottom: ;' },
+    { text: 'justify-content', insertText: 'justify-content: ;' },
+    { text: 'align-items', insertText: 'align-items: ;' },
+    { text: 'transform', insertText: 'transform: ;' },
+    { text: 'transition', insertText: 'transition: ;' },
+    { text: 'box-shadow', insertText: 'box-shadow: ;' },
+    { text: 'border-radius', insertText: 'border-radius: ;' },
+    { text: 'opacity', insertText: 'opacity: ;' },
+    { text: 'z-index', insertText: 'z-index: ;' },
+    { text: 'overflow', insertText: 'overflow: ;' },
+    { text: 'cursor', insertText: 'cursor: ;' },
+    { text: 'text-decoration', insertText: 'text-decoration: ;' }
+  ],
+  js: [
+    { text: 'function', insertText: 'function myFunction() {\n  \n}' },
+    { text: 'const', insertText: 'const myVar = "";' },
+    { text: 'let', insertText: 'let myVar = "";' },
+    { text: 'var', insertText: 'var myVar = "";' },
+    { text: 'if', insertText: 'if (condition) {\n  \n}' },
+    { text: 'else', insertText: 'else {\n  \n}' },
+    { text: 'for', insertText: 'for (let i = 0; i < array.length; i++) {\n  \n}' },
+    { text: 'while', insertText: 'while (condition) {\n  \n}' },
+    { text: 'return', insertText: 'return ;' },
+    { text: 'console.log', insertText: 'console.log("");' },
+    { text: 'querySelector', insertText: 'document.querySelector("");' },
+    { text: 'getElementById', insertText: 'document.getElementById("");' },
+    { text: 'innerHTML', insertText: 'element.innerHTML = "";' },
+    { text: 'textContent', insertText: 'element.textContent = "";' },
+    { text: 'style', insertText: 'element.style.property = "";' },
+    { text: 'classList', insertText: 'element.classList.add("");' },
+    { text: 'setAttribute', insertText: 'element.setAttribute("", "value");' },
+    { text: 'getAttribute', insertText: 'element.getAttribute("");' },
+    { text: 'createElement', insertText: 'document.createElement("");' },
+    { text: 'appendChild', insertText: 'parent.appendChild();' },
+    { text: 'removeChild', insertText: 'parent.removeChild();' },
+    { text: 'setTimeout', insertText: 'setTimeout(() => {\n  \n}, 1000);' },
+    { text: 'setInterval', insertText: 'setInterval(() => {\n  \n}, 1000);' },
+    { text: 'addEventListener', insertText: 'addEventListener("click", () => {\n  \n});' },
+    { text: 'fetch', insertText: 'fetch("")\n  .then(response => response.json())\n  .then(data => {\n    \n  });' },
+    { text: 'JSON.parse', insertText: 'JSON.parse();' },
+    { text: 'JSON.stringify', insertText: 'JSON.stringify();' },
+    { text: 'localStorage', insertText: 'localStorage.setItem("", "value");' },
+    { text: 'alert', insertText: 'alert("");' },
+    { text: 'confirm', insertText: 'confirm("");' },
+    { text: 'prompt', insertText: 'prompt("");' }
+  ]
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Tab switching functionality
+  const tabs = document.querySelectorAll('.code-tab');
+  const editors = document.querySelectorAll('.code-textarea');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      const targetTab = this.getAttribute('data-tab');
+      
+      // Check if it's the Python tab (PRO feature)
+      if (targetTab === 'python') {
+        // Show upgrade modal
+        document.getElementById('upgrade-overlay').style.display = 'flex';
+        return;
+      }
+      
+      // Update active tab
+      tabs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      
+      // Show corresponding editor
+      editors.forEach(editor => {
+        editor.style.display = 'none';
+      });
+      document.getElementById(targetTab + '-editor').style.display = 'block';
+    });
+  });
+
+
+
+  const previewDropdownBtn = document.getElementById('previewDropdownBtn');
+const previewDropdown = document.getElementById('previewDropdown');
+const currentPreviewFile = document.getElementById('currentPreviewFile');
+
+  previewDropdownBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const isOpen = previewDropdown.style.display === 'block';
+    
+    if (isOpen) {
+        closePreviewDropdown();
+    } else {
+        updatePreviewDropdown();
+        previewDropdown.style.display = 'block';
+        setTimeout(() => {
+            previewDropdown.style.opacity = '1';
+            previewDropdown.style.transform = 'translateY(0)';
+        }, 10);
+    }
+});
+
+
+
+
+
+  // Live preview update
+  const htmlEditor = document.getElementById('html-editor');
+  const cssEditor = document.getElementById('css-editor');
+  const jsEditor = document.getElementById('js-editor');
+  const previewFrame = document.getElementById('preview-frame');
+  const saveBtn = document.getElementById('save-btn');
+  
+  // Enable autocomplete for all editors
+  setupAutocomplete(htmlEditor, 'html');
+  setupAutocomplete(cssEditor, 'css');
+  setupAutocomplete(jsEditor, 'js');
+  
+  function updatePreview() {
+    const html = htmlEditor.value;
+    const css = cssEditor.value;
+    const js = jsEditor.value;
+    
+    const srcdoc = `
+      <style>html,body{margin:0;padding:0;overflow:hidden;}body{background:#fff;}</style>
+      ${html}
+      <style>${css}</style>
+      <script>${js}<\/script>
+    `;
+    
+    previewFrame.srcdoc = srcdoc;
+  }
+  
+  // Auto-update preview on input
+  htmlEditor.addEventListener('input', updatePreview);
+  cssEditor.addEventListener('input', updatePreview);
+  jsEditor.addEventListener('input', updatePreview);
+  
+    // Fullscreen functionality
+  const fullscreenBtn = document.getElementById('fullscreen-btn');
+  const fullscreenModal = document.getElementById('fullscreen-modal');
+  const fullscreenFrame = document.getElementById('fullscreen-frame');
+  const closeFullscreenBtn = document.getElementById('close-fullscreen-btn');
+  
+  fullscreenBtn.addEventListener('click', () => {
+    fullscreenModal.style.display = 'flex';
+    fullscreenFrame.srcdoc = previewFrame.srcdoc;
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  });
+  
+  closeFullscreenBtn.addEventListener('click', () => {
+    fullscreenModal.style.display = 'none';
+    document.body.style.overflow = 'auto'; // Restore scrolling
+  });
+  
+  // Close fullscreen with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && fullscreenModal.style.display === 'flex') {
+      fullscreenModal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+    if (e.key === 'Escape' && codeFullscreenModal.style.display === 'flex') {
+      closeCodeFullscreen();
+    }
+    if (e.key === 'Escape' && document.getElementById('upgrade-overlay').style.display === 'flex') {
+      document.getElementById('upgrade-overlay').style.display = 'none';
+    }
+  });
+  
+  // Upgrade modal functionality
+  const upgradeOverlay = document.getElementById('upgrade-overlay');
+  const closeUpgradeBtn = document.getElementById('close-upgrade-btn');
+  
+  closeUpgradeBtn.addEventListener('click', () => {
+    upgradeOverlay.style.display = 'none';
+  });
+  
+  // Close upgrade modal when clicking outside
+  upgradeOverlay.addEventListener('click', (e) => {
+    if (e.target === upgradeOverlay) {
+      upgradeOverlay.style.display = 'none';
+    }
+  });
+
+  // Code Fullscreen functionality
+  const codeFullscreenBtn = document.getElementById('code-fullscreen-btn');
+  const codeFullscreenModal = document.getElementById('code-fullscreen-modal');
+  const codeFullscreenTabs = document.querySelectorAll('.code-fullscreen-tab');
+  const codeFullscreenHtml = document.getElementById('code-fullscreen-html');
+  const codeFullscreenCss = document.getElementById('code-fullscreen-css');
+  const codeFullscreenJs = document.getElementById('code-fullscreen-js');
+  const closeCodeFullscreenBtn = document.getElementById('close-code-fullscreen-btn');
+  
+  function openCodeFullscreen() {
+    // Store current scroll positions
+    const htmlScrollTop = htmlEditor.scrollTop;
+    const cssScrollTop = cssEditor.scrollTop;
+    const jsScrollTop = jsEditor.scrollTop;
+    
+    // Copy current code to fullscreen editors
+    codeFullscreenHtml.value = htmlEditor.value;
+    codeFullscreenCss.value = cssEditor.value;
+    codeFullscreenJs.value = jsEditor.value;
+    
+    // Show fullscreen modal
+    codeFullscreenModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Focus on the active tab
+    const activeTab = document.querySelector('.code-tab.active').getAttribute('data-tab');
+    switchTab(activeTab);
+    
+    // Restore scroll positions after a short delay to ensure elements are rendered
+    setTimeout(() => {
+      codeFullscreenHtml.scrollTop = htmlScrollTop;
+      codeFullscreenCss.scrollTop = cssScrollTop;
+      codeFullscreenJs.scrollTop = jsScrollTop;
+    }, 50);
+  }
+  
+  function closeCodeFullscreen() {
+    // Store current scroll positions from fullscreen editors
+    const htmlScrollTop = codeFullscreenHtml.scrollTop;
+    const cssScrollTop = codeFullscreenCss.scrollTop;
+    const jsScrollTop = codeFullscreenJs.scrollTop;
+    
+    // Copy code back to main editors
+    htmlEditor.value = codeFullscreenHtml.value;
+    cssEditor.value = codeFullscreenCss.value;
+    jsEditor.value = codeFullscreenJs.value;
+    
+    // Hide fullscreen modal
+    codeFullscreenModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+    
+    // Restore scroll positions after a short delay to ensure elements are rendered
+    setTimeout(() => {
+      htmlEditor.scrollTop = htmlScrollTop;
+      cssEditor.scrollTop = cssScrollTop;
+      jsEditor.scrollTop = jsScrollTop;
+    }, 50);
+    
+    // Update preview
+    updatePreview();
+  }
+  
+  function switchTab(tabName) {
+    // Update tab buttons
+    codeFullscreenTabs.forEach(tab => {
+      tab.classList.remove('active');
+      if (tab.getAttribute('data-tab') === tabName) {
+        tab.classList.add('active');
+      }
+    });
+    
+    // Show corresponding editor
+    codeFullscreenHtml.style.display = tabName === 'html' ? 'block' : 'none';
+    codeFullscreenCss.style.display = tabName === 'css' ? 'block' : 'none';
+    codeFullscreenJs.style.display = tabName === 'js' ? 'block' : 'none';
+  }
+  
+  codeFullscreenBtn.addEventListener('click', openCodeFullscreen);
+  closeCodeFullscreenBtn.addEventListener('click', closeCodeFullscreen);
+  
+  // Tab switching in fullscreen
+  codeFullscreenTabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      const targetTab = this.getAttribute('data-tab');
+      
+      // Check if it's the Python tab (PRO feature)
+      if (targetTab === 'python') {
+        // Show upgrade modal
+        document.getElementById('upgrade-overlay').style.display = 'flex';
+        return;
+      }
+      
+      switchTab(targetTab);
+    });
+  });
+  
+  // Full Mode functionality
+  const fullModeBtn = document.getElementById('full-mode-btn');
+  let isFullMode = false;
+  let previousTop = null;
+  
+  fullModeBtn.addEventListener('click', () => {
+    const editorContainer = document.querySelector('.editor-container');
+    
+    if (!isFullMode) {
+      // Enter full height
+      previousTop = editorContainer.style.top;
+      editorContainer.classList.add('full-mode');
+      fullModeBtn.textContent = 'Exit Full Height';
+      isFullMode = true;
+    } else {
+      // Exit full height
+      editorContainer.classList.remove('full-mode');
+      if (previousTop) {
+        editorContainer.style.top = previousTop;
+      }
+      fullModeBtn.textContent = 'Full Height';
+      isFullMode = false;
+    }
+  });
+  
+  // Vertical resize functionality - overlay mode
+  const verticalResizeHandle = document.getElementById('vertical-resize-handle');
+  const editorContainer = document.querySelector('.editor-container');
+  
+  let isResizing = false;
+  let startY = 0;
+  let startTop = 0;
+  
+  // Initial position - start below the headers
+  const navHeader = document.querySelector('.nav-header');
+  const forkHeader = document.querySelector('.fork-header');
+  const initialTop = navHeader.offsetHeight + forkHeader.offsetHeight;
+  editorContainer.style.top = `${initialTop}px`;
+  
+  verticalResizeHandle.addEventListener('mousedown', (e) => {
+    isResizing = true;
+    startY = e.clientY;
+    startTop = parseInt(editorContainer.style.top) || initialTop;
+    verticalResizeHandle.classList.add('dragging');
+    document.body.style.cursor = 'row-resize';
+    e.preventDefault();
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    
+    const deltaY = e.clientY - startY;
+    const newTop = startTop + deltaY;
+    
+    // Allow going over the headers (negative top values)
+    const minTop = -forkHeader.offsetHeight; // Can go over the grey section
+    const maxTop = window.innerHeight - 200; // Keep at least 200px visible
+    
+    const constrainedTop = Math.max(minTop, Math.min(maxTop, newTop));
+    editorContainer.style.top = `${constrainedTop}px`;
+  });
+  
+  document.addEventListener('mouseup', () => {
+    if (isResizing) {
+      isResizing = false;
+      verticalResizeHandle.classList.remove('dragging');
+      document.body.style.cursor = 'default';
+    }
+  });
+  
+  function showSaveStatus(message, type) {
+    const status = document.getElementById('save-status');
+    status.textContent = message;
+    status.className = `save-status ${type} show`;
+    
+    setTimeout(() => {
+      status.classList.remove('show');
+    }, 3000);
+  }
+  
+  // Simple autocomplete like Cursor with Emmet support
+  function setupAutocomplete(editor, editorType) {
+    editor.addEventListener('keydown', (e) => {
+      // Tab or Enter to accept suggestion
+      if (e.key === 'Tab' || e.key === 'Enter') {
+        const cursorPosition = editor.selectionStart;
+        const textBeforeCursor = editor.value.substring(0, cursorPosition);
+        const words = textBeforeCursor.split(/\s+/);
+        const currentWord = words[words.length - 1];
+        
+        if (currentWord && currentWord.length > 0) {
+          // Check for Emmet-like patterns first (only for HTML editor)
+          if (editorType === 'html') {
+            const emmetResult = processEmmet(currentWord);
+            if (emmetResult) {
+              e.preventDefault();
+              
+              // Remove the typed word completely
+              const newTextBefore = textBeforeCursor.substring(0, textBeforeCursor.length - currentWord.length);
+              const textAfterCursor = editor.value.substring(cursorPosition);
+              
+              // Insert Emmet result
+              const newText = newTextBefore + emmetResult.html + textAfterCursor;
+              editor.value = newText;
+              
+              // Position caret based on Emmet result
+              let newCursorPosition = newTextBefore.length + emmetResult.caretPosition;
+              editor.setSelectionRange(newCursorPosition, newCursorPosition);
+              
+              updatePreview();
+              return false;
+            }
+          }
+          
+          // Find matching suggestion
+          const suggestions = autocompleteData[editorType];
+          const suggestion = suggestions.find(s => s.text.toLowerCase().startsWith(currentWord.toLowerCase()));
+          
+          if (suggestion) {
+            e.preventDefault();
+            
+            // Remove the typed word completely
+            const newTextBefore = textBeforeCursor.substring(0, textBeforeCursor.length - currentWord.length);
+            const textAfterCursor = editor.value.substring(cursorPosition);
+            
+            // Insert suggestion
+            let insertText = suggestion.insertText;
+            
+            // Special case for HTML5 boilerplate
+            if (insertText.startsWith('<!DOCTYPE html>')) {
+              editor.value = insertText;
+              editor.setSelectionRange(insertText.length, insertText.length);
+            } else {
+              // Normal insertion
+              const newText = newTextBefore + insertText + textAfterCursor;
+              editor.value = newText;
+              
+              // Intelligent caret positioning based on suggestion type
+              let newCursorPosition = newTextBefore.length + insertText.length;
+              
+              // HTML elements with opening/closing tags
+              if (/^<([a-z0-9]+)[^>]*><\/\1>$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('>') + 1;
+              }
+              // HTML elements with attributes (like <a href="">)
+              else if (/^<[a-z0-9]+[^>]*"[^"]*">$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.lastIndexOf('"');
+              }
+              // HTML img tag with src and alt
+              else if (/^<img src="" alt="">$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('src="') + 5;
+              }
+              // HTML input tag
+              else if (/^<input type="text">$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.length;
+              }
+              // CSS properties (like color: ;)
+              else if (/^[a-z-]+:\s*;$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf(':') + 1;
+              }
+              // JavaScript variable declarations (like const myVar = "";)
+              else if (/^[a-z]+\s+[a-zA-Z_$][a-zA-Z0-9_$]*\s*=\s*"";$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+              }
+              // JavaScript function declarations (like function myFunction() {})
+              else if (/^function\s+[a-zA-Z_$][a-zA-Z0-9_$]*\s*\([^)]*\)\s*\{\s*\}$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('{') + 1;
+              }
+              // JavaScript if/else/for/while statements
+              else if (/^(if|else|for|while)\s*\([^)]*\)\s*\{\s*\}$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('{') + 1;
+              }
+              // JavaScript console.log, alert, etc.
+              else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\(""\);$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+              }
+              // JavaScript setAttribute with two parameters
+              else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\("", ""\);$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+              }
+              // JavaScript localStorage.setItem
+              else if (/^localStorage\.setItem\("", ""\);$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+              }
+              // JavaScript fetch with then blocks
+              else if (/^fetch\(""\)\s*\.then\([^)]*\)\s*\.then\([^)]*\)\s*\{[\s\S]*\};$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+              }
+              // JavaScript setTimeout/setInterval
+              else if (/^(setTimeout|setInterval)\(\(\) => \{\s*\}, \d+\);$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('{') + 1;
+              }
+              // JavaScript addEventListener
+              else if (/^addEventListener\("", \(\) => \{\s*\}\);$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('{') + 1;
+              }
+              // JavaScript querySelector, getElementById, getAttribute
+              else if (/^(document\.)?(querySelector|getElementById|getAttribute)\(""\);?$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+              }
+              // JavaScript innerHTML, textContent
+              else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\.(innerHTML|textContent)\s*=\s*"";?$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+              }
+              // JavaScript style property
+              else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\.style\.[a-zA-Z0-9_$]+\s*=\s*"";?$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+              }
+              // JavaScript classList.add
+              else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\.classList\.add\(""\);?$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+              }
+              // JavaScript createElement
+              else if (/^document\.createElement\(""\);?$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('""') + 1;
+              }
+              // JavaScript JSON.parse, JSON.stringify
+              else if (/^JSON\.(parse|stringify)\(\);?$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('(') + 1;
+              }
+              // JavaScript appendChild, removeChild
+              else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\.(appendChild|removeChild)\(\);?$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('(') + 1;
+              }
+              // JavaScript return statement
+              else if (/^return\s*;?$/.test(insertText)) {
+                newCursorPosition = newTextBefore.length + insertText.indexOf('return') + 6;
+              }
+              
+              editor.setSelectionRange(newCursorPosition, newCursorPosition);
+            }
+            
+            updatePreview();
+            return false;
+          }
+        }
+      }
+    });
+  }
+
+  // Emmet-like functionality
+  function processEmmet(text) {
+    // div.abc -> <div class="abc"></div>
+    const classMatch = text.match(/^([a-z0-9]+)\.([a-zA-Z0-9_-]+)$/);
+    if (classMatch) {
+      const tag = classMatch[1];
+      const className = classMatch[2];
+      return {
+        html: `<${tag} class="${className}"></${tag}>`,
+        caretPosition: `<${tag} class="${className}">`.length
+      };
+    }
+    
+    // div#abc -> <div id="abc"></div>
+    const idMatch = text.match(/^([a-z0-9]+)#([a-zA-Z0-9_-]+)$/);
+    if (idMatch) {
+      const tag = idMatch[1];
+      const id = idMatch[2];
+      return {
+        html: `<${tag} id="${id}"></${tag}>`,
+        caretPosition: `<${tag} id="${id}">`.length
+      };
+    }
+    
+    // div.abc#def -> <div class="abc" id="def"></div>
+    const classIdMatch = text.match(/^([a-z0-9]+)\.([a-zA-Z0-9_-]+)#([a-zA-Z0-9_-]+)$/);
+    if (classIdMatch) {
+      const tag = classIdMatch[1];
+      const className = classIdMatch[2];
+      const id = classIdMatch[3];
+      return {
+        html: `<${tag} class="${className}" id="${id}"></${tag}>`,
+        caretPosition: `<${tag} class="${className}" id="${id}">`.length
+      };
+    }
+    
+    // div#abc.def -> <div id="abc" class="def"></div>
+    const idClassMatch = text.match(/^([a-z0-9]+)#([a-zA-Z0-9_-]+)\.([a-zA-Z0-9_-]+)$/);
+    if (idClassMatch) {
+      const tag = idClassMatch[1];
+      const id = idClassMatch[2];
+      const className = idClassMatch[3];
+      return {
+        html: `<${tag} id="${id}" class="${className}"></${tag}>`,
+        caretPosition: `<${tag} id="${id}" class="${className}">`.length
+      };
+    }
+    
+    // div[attr=value] -> <div attr="value"></div>
+    const attrMatch = text.match(/^([a-z0-9]+)\[([a-zA-Z0-9_-]+)=([^\]]+)\]$/);
+    if (attrMatch) {
+      const tag = attrMatch[1];
+      const attr = attrMatch[2];
+      const value = attrMatch[3];
+      return {
+        html: `<${tag} ${attr}="${value}"></${tag}>`,
+        caretPosition: `<${tag} ${attr}="${value}">`.length
+      };
+    }
+    
+    // div.abc[attr=value] -> <div class="abc" attr="value"></div>
+    const classAttrMatch = text.match(/^([a-z0-9]+)\.([a-zA-Z0-9_-]+)\[([a-zA-Z0-9_-]+)=([^\]]+)\]$/);
+    if (classAttrMatch) {
+      const tag = classAttrMatch[1];
+      const className = classAttrMatch[2];
+      const attr = classAttrMatch[3];
+      const value = classAttrMatch[4];
+      return {
+        html: `<${tag} class="${className}" ${attr}="${value}"></${tag}>`,
+        caretPosition: `<${tag} class="${className}" ${attr}="${value}">`.length
+      };
+    }
+    
+    // div*3 -> <div></div><div></div><div></div>
+    const repeatMatch = text.match(/^([a-z0-9]+)\*(\d+)$/);
+    if (repeatMatch) {
+      const tag = repeatMatch[1];
+      const count = parseInt(repeatMatch[2]);
+      const html = `<${tag}></${tag}>`.repeat(count);
+      return {
+        html: html,
+        caretPosition: html.length
+      };
+    }
+    
+    // div.abc*3 -> <div class="abc"></div><div class="abc"></div><div class="abc"></div>
+    const classRepeatMatch = text.match(/^([a-z0-9]+)\.([a-zA-Z0-9_-]+)\*(\d+)$/);
+    if (classRepeatMatch) {
+      const tag = classRepeatMatch[1];
+      const className = classRepeatMatch[2];
+      const count = parseInt(classRepeatMatch[3]);
+      const html = `<${tag} class="${className}"></${tag}>`.repeat(count);
+      return {
+        html: html,
+        caretPosition: html.length
+      };
+    }
+    
+    return null;
+  }
+  
+  // Initialize preview
+  updatePreview();
+  
+  // Auto-save functionality (like create.html)
+  const DRAFT_KEY = `codepen_draft_edit_{{ pen.id }}`;
+  
+  function saveDraft() {
+    const draft = {
+      html: htmlEditor.value,
+      css: cssEditor.value,
+      js: jsEditor.value,
+      title: '{{ pen.title|default:"Edit Template" }}'
+    };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  }
+  
+  function loadDraft() {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      try {
+        const data = JSON.parse(draft);
+        htmlEditor.value = data.html || '';
+        cssEditor.value = data.css || '';
+        jsEditor.value = data.js || '';
+        updatePreview();
+      } catch {}
+    }
+  }
+  
+  function clearDraft() {
+    localStorage.removeItem(DRAFT_KEY);
+  }
+  
+  // Autosave on edit
+  document.querySelectorAll('#html-editor, #css-editor, #js-editor').forEach(el => {
+    el.addEventListener('input', () => {
+      updatePreview();
+      saveDraft();
+    });
+  });
+  
+  // Load draft on page load
+  loadDraft();
+  
+  // Prevent navigation away from edit page unless user clicks Save as New
+  let hasClickedSave = false;
+  
+
+  
+
+  
+  // Save confirmation functionality
+  const saveConfirmationOverlay = document.getElementById('save-confirmation-overlay');
+  const confirmSaveBtn = document.getElementById('confirm-save-btn');
+  const cancelSaveBtn = document.getElementById('cancel-save-btn');
+
+  // Show confirmation when save button is clicked
+  saveBtn.addEventListener('click', function() {
+    saveConfirmationOverlay.style.display = 'flex';
+  });
+
+  // Handle confirmation
+  confirmSaveBtn.addEventListener('click', function() {
+    hasClickedSave = true; // Set flag to allow navigation
+    
+    const formData = new FormData();
+    formData.append('html_code', htmlEditor.value);
+    formData.append('css_code', cssEditor.value);
+    formData.append('js_code', jsEditor.value);
+    formData.append('title', '{{ pen.title|default:"Edit Template" }}');
+    formData.append('original_pen_id', '{{ pen.id }}');
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    fetch('{% url "save_edit" %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        clearDraft(); // Clear draft after successful save
+        showSaveStatus('Template saved successfully! Redirecting to projects...', 'success');
+        // Redirect to projects page after a short delay
+        setTimeout(() => {
+          window.location.href = data.redirect_url || '/projects/';
+        }, 1500);
+      } else {
+        hasClickedSave = false; // Reset flag if save failed
+        showSaveStatus('Error saving template: ' + data.error, 'error');
+      }
+    })
+    .catch(error => {
+      hasClickedSave = false; // Reset flag if save failed
+      showSaveStatus('Error saving template', 'error');
+    });
+  });
+
+  // Handle cancellation
+  cancelSaveBtn.addEventListener('click', function() {
+    saveConfirmationOverlay.style.display = 'none';
+  });
+
+  // Close confirmation with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && saveConfirmationOverlay.style.display === 'flex') {
+      saveConfirmationOverlay.style.display = 'none';
+    }
+  });
+});
+const form = document.createElement('form');
+form.method = 'POST';
+form.action = '{% url "edit_pen" pen.id %}'; // point to edit route
+
+const csrfToken = document.createElement('input');
+csrfToken.type = 'hidden';
+csrfToken.name = 'csrfmiddlewaretoken';
+csrfToken.value = '{{ csrf_token }}';
+
+const titleInput = document.createElement('input');
+titleInput.type = 'hidden';
+titleInput.name = 'title';
+titleInput.value = projectTitleInput ? projectTitleInput.value.trim() || 'Untitled' : 'Untitled';
+
+const htmlInput = document.createElement('input');
+htmlInput.type = 'hidden';
+htmlInput.name = 'html_code';
+htmlInput.value = htmlEditor.value;
+
+const cssInput = document.createElement('input');
+cssInput.type = 'hidden';
+cssInput.name = 'css_code';
+cssInput.value = cssEditor.value;
+
+const jsInput = document.createElement('input');
+jsInput.type = 'hidden';
+jsInput.name = 'js_code';
+jsInput.value = jsEditor.value;
+
+form.appendChild(csrfToken);
+form.appendChild(titleInput);
+form.appendChild(htmlInput);
+form.appendChild(cssInput);
+form.appendChild(jsInput);
+
+// Add all new files content to the form
+addedFiles.forEach(fileName => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'hidden';
+    fileInput.name = fileName.replace(/\.(html|css|js)$/, '') + '_code';
+
+    const textarea = document.getElementById(fileName.replace(/\.(html|css|js)$/, '') + 'Editor');
+    if (textarea) {
+        fileInput.value = textarea.value;
+    }
+
+    form.appendChild(fileInput);
+});
+
+document.body.appendChild(form);
+form.submit();
+</script>
+{% endblock %} 

@@ -1,0 +1,25 @@
+{% extends "app/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Confirm Email Address" %}{% endblock %}
+
+{% block body %}
+<section class="d-flex justify-content-center align-items-center bg-white" style="min-height: 100vh;">
+    <div class="card border-0 shadow-sm p-4 rounded-4" style="max-width: 420px; width: 100%;">
+        <h3 class="text-center mb-3">{% trans "Confirm Email Address" %}</h3>
+
+        <p class="text-center text-muted">
+            {% blocktrans with email_address=confirmation.email_address.email %}
+                Please confirm that <strong>{{ email_address }}</strong> is an email address for user <strong>{{ confirmation.email_address.user.username }}</strong>.
+            {% endblocktrans %}
+        </p>
+
+        <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+            {% csrf_token %}
+            <button type="submit" class="btn w-100 py-2 text-white" style="background-color: #000;">
+                {% trans "Confirm" %}
+            </button>
+        </form>
+    </div>
+</section>
+{% endblock %}

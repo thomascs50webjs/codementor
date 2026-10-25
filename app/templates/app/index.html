@@ -1,0 +1,2690 @@
+{% extends "app/base.html" %}
+{% load static %}
+
+{% block title %}LIVE CODITOR - Professional Code Editor & Development Platform{% endblock %}
+
+{% block description %}LIVE CODITOR is a professional code editor and development platform that allows developers to write, edit, and debug code efficiently. Collaborate seamlessly with others, leverage existing templates or code from other websites, and deploy projects professionally with ease.{% endblock %}
+
+{% block og_title %}LIVE CODITOR - Professional Code Editor & Development Platform{% endblock %}
+{% block og_description %}LIVE CODITOR empowers developers to write, edit, and debug code while collaborating with others. Utilize templates or code from other websites to accelerate development and deploy projects efficiently and professionally.{% endblock %}
+{% block og_image %}{% static 'app/index_preview.png' %}{% endblock %}
+
+{% block twitter_title %}LIVE CODITOR - Professional Code Editor & Development Platform{% endblock %}
+{% block twitter_description %}LIVE CODITOR is the ultimate platform for coding, collaboration, and professional development. Edit, reuse templates or code from other websites, debug, and deploy projects seamlessly.{% endblock %}
+{% block twitter_image %}{% static 'app/index_preview.png' %}{% endblock %}
+{% block body %}
+
+{% load socialaccount %} 
+{% load account %}
+
+<style>
+/* Reset and Base Styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+  font-family: 'Montserrat', sans-serif;
+  background: #ffffff;
+  color: #1a1a1a;
+    line-height: 1.6;
+  overflow-x: hidden;
+  }
+  
+  /* Navigation */
+  .navbar {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 3rem;
+  background: #ffffff;
+  transition: all 0.3s ease;
+  }
+  
+  .logo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1a1a1a;
+    text-decoration: none;
+  letter-spacing: -0.5px;
+  position: relative;
+  }
+  
+  .logo::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #1a1a1a, #333);
+  transition: width 0.3s ease;
+  }
+  
+  .logo:hover::after {
+  width: 100%;
+  }
+  
+  .nav-links {
+    display: flex;
+  gap: 2.5rem;
+  align-items: center;
+  }
+  
+  .nav-links a {
+  color: #666;
+    text-decoration: none;
+    font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+    position: relative;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  }
+  
+  .nav-links a:hover {
+  color: #1a1a1a;
+  background: rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #1a1a1a;
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+  }
+  
+  .nav-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .btn-secondary {
+  background: transparent;
+  color: #1a1a1a;
+  border: 1px solid #1a1a1a;
+  padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+    text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  }
+  
+  .btn-secondary:hover {
+  background: #1a1a1a;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary-nav {
+  background: #1a1a1a;
+  color: #ffffff;
+  border: 1px solid #1a1a1a;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary-nav:hover {
+  background: #333;
+  border-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Hero Section */
+  .hero {
+  min-height: 100vh;
+  position: relative;
+  bottom: 3rem !important;
+    display: flex;
+    align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hero content styling */
+.hero-left {
+  padding-right: 2rem;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #ffffff;
+  pointer-events: none;
+  }
+  
+  .hero-content {
+  max-width: 1400px;
+  width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  position: relative;
+  z-index: 2;
+  padding-left: 0;
+  margin-left: 0;
+  }
+  
+  .hero-left {
+  flex: 1;
+  max-width: 600px;
+  padding-right: 0;
+  padding-left: 0;
+  text-align: left;
+  margin-left: 0;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.05);
+  color: #1a1a1a;
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.badge-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.badge-top {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
+}
+
+.badge-bottom {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: underline;
+  color: #1a1a1a;
+}
+
+.hero-badge svg {
+  width: 16px;
+  height: 16px;
+  }
+  
+  .hero-title {
+    margin-bottom: 2rem;
+    text-align: left;
+    margin-left: 47px;
+    padding-left: 0;
+  }
+
+.title-main {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.color-letter {
+  background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: colorShift 3s ease-in-out infinite;
+  margin-right: 2px;
+}
+
+.word-space {
+  width: 20px;
+  display: inline-block;
+}
+
+.color-letter:nth-child(1) { animation-delay: 0s; }
+.color-letter:nth-child(2) { animation-delay: 0.1s; }
+.color-letter:nth-child(3) { animation-delay: 0.2s; }
+.color-letter:nth-child(4) { animation-delay: 0.3s; }
+.color-letter:nth-child(5) { animation-delay: 0.4s; }
+.color-letter:nth-child(6) { animation-delay: 0.5s; }
+.color-letter:nth-child(7) { animation-delay: 0.6s; }
+.color-letter:nth-child(8) { animation-delay: 0.7s; }
+.color-letter:nth-child(9) { animation-delay: 0.8s; }
+.color-letter:nth-child(10) { animation-delay: 0.9s; }
+.color-letter:nth-child(11) { animation-delay: 1s; }
+.color-letter:nth-child(12) { animation-delay: 1.1s; }
+.color-letter:nth-child(13) { animation-delay: 1.2s; }
+.color-letter:nth-child(14) { animation-delay: 1.3s; }
+.color-letter:nth-child(15) { animation-delay: 1.4s; }
+
+@keyframes colorShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.title-subtitle {
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: #666;
+  line-height: 1.4;
+  letter-spacing: 0.2px;
+  position: relative;
+  bottom: 15px;
+  left: 50px;
+  opacity: 0;
+  animation: fadeInUp 0.8s ease forwards;
+  animation-delay: 0.5s;
+}
+  
+  .hero-description {
+  font-size: 1.2rem;
+    color: #666;
+  margin-bottom: 2.5rem;
+  line-height: 1.7;
+  font-weight: 400;
+  text-align: left;
+  margin-left: 0;
+  padding-left: 0;
+  }
+  
+  .hero-cta {
+    display: flex;
+  gap: 1rem;
+  margin-bottom: 3rem;
+  align-items: center;  
+  justify-content: flex-start;
+  margin-left: 50px;
+  padding-left: 0;
+}
+
+.btn-primary {
+  background: #1a1a1a;
+  color: #ffffff;
+  border: 1px solid #1a1a1a;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+    font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  background: #333;
+  border-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.btn-secondary-hero {
+  background: transparent;
+  color: #1a1a1a;
+  border: 1px solid #1a1a1a;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+    font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-secondary-hero:hover {
+  background: #1a1a1a;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+  .hero-stats {
+    display: flex;
+  gap: 4rem;
+  margin-top: 3rem;
+  }
+  
+  .stat-box {
+    text-align: center;
+  }
+  
+  .stat-number {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1a1a1a;
+    display: block;
+  margin-bottom: 0.5rem;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+    color: #666;
+  font-weight: 500;
+  }
+  
+/* Mini Code Editor Interface - Exact create.html styling */
+  .hero-right {
+  flex: 1;
+  position: relative;
+  height: 600px;
+    display: flex;
+    align-items: center;
+  justify-content: flex-end;
+  margin-top: -2rem;
+}
+
+.hero-right::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.hero-right::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  right: -20px;
+  width: 60px;
+  height: 60px;
+  background: radial-gradient(circle, rgba(0,0,0,0.05) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.mini-editor-container {
+  width: 100%;
+  max-width: 600px;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+  position: relative;
+  transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
+  transition: all 0.3s ease;
+}
+
+.mini-editor-container:hover {
+  transform: perspective(1000px) rotateY(-2deg) rotateX(2deg);
+  box-shadow: 0 30px 100px rgba(0,0,0,0.2);
+}
+
+/* Navigation Header - Exact create.html */
+.mini-nav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  background: #000;
+  border-bottom: 1px solid #333;
+}
+
+.mini-nav-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.mini-nav-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  flex: 2;
+  margin-left: 1rem;
+}
+
+.mini-nav-right {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.mini-nav-logo {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  margin-right: 1rem;
+  background: #000;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+}
+
+.mini-nav-title-input {
+  border: none;
+  background: transparent;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 0.2rem 0;
+  outline: none;
+  min-width: 120px;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s ease;
+  transform: translateY(1px);
+}
+
+.mini-nav-title-input:focus {
+  border-bottom-color: #007bff;
+}
+
+.mini-nav-title-input::placeholder {
+  color: #ccc;
+  font-style: italic;
+}
+
+/* File Explorer - Exact create.html */
+.mini-file-explorer {
+    position: relative;
+  margin-left: 1rem;
+  display: inline-block;
+}
+
+.mini-file-explorer-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #000;
+  color: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.mini-file-explorer-btn:hover {
+  background: #333;
+  border-color: #333;
+}
+
+.mini-dropdown-arrow {
+  color: #fff;
+  transition: transform 0.3s ease;
+}
+
+.mini-file-explorer-dropdown {
+    position: absolute;
+  top: 100%;
+  left: 0;
+    background: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  min-width: 180px;
+  z-index: 1000;
+  display: none;
+  margin-top: 0.5rem;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.mini-file-explorer-header {
+  padding: 0.5rem 0.75rem;
+  background: #000;
+  border-bottom: 1px solid #000;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mini-file-explorer-list {
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mini-file-explorer-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* Navigation Buttons - Exact create.html */
+.mini-nav-btn {
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  transition: all 0.2s;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.mini-nav-btn.secondary {
+  background: #000;
+  color: #fff;
+  border: 1px solid #fff;
+}
+
+.mini-nav-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Editor Container - Exact create.html */
+.mini-editor-container-inner {
+  position: relative;
+  height: 400px;
+  background: #000;
+  margin: 0;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+/* Code Panel - Exact create.html */
+.mini-code-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+}
+
+.mini-code-tabs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+    background: #000;
+  border-bottom: 1px solid #333;
+  }
+  
+.mini-code-tabs-left {
+    display: flex;
+}
+
+.mini-code-tabs-right {
+  display: flex;
+  align-items: center;
+}
+
+.mini-code-tab {
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.8rem;
+  color: #999;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.mini-code-tab.active {
+  color: #fff;
+  border-bottom-color: #1976d2;
+    background: #000;
+}
+
+.mini-code-tab:hover:not(.active) {
+  color: #fff;
+  background: #1a1a1a;
+}
+
+.mini-code-tab.pro-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.mini-pro-badge {
+  background: #ffd700;
+  color: #000;
+  font-size: 0.4rem;
+  font-weight: 700;
+  padding: 0.05rem 0.2rem;
+  border-radius: 1px;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  margin-left: 0.2rem;
+  margin-top: -0.1rem;
+}
+
+.mini-code-fullscreen-btn {
+  padding: 0.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.5rem;
+}
+
+.mini-code-fullscreen-btn:hover {
+  color: #fff;
+}
+
+/* Code Editor - Exact create.html */
+.mini-code-editor-container {
+  display: flex;
+  height: 100%;
+  position: relative;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.mini-line-numbers {
+    width: 40px;
+  min-width: 40px;
+  background: #1e1e1e;
+  color: #858585;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  padding: 1rem 0.3rem 1rem 0.8rem;
+  text-align: right;
+  user-select: none;
+  overflow-y: hidden;
+  flex-shrink: 0;
+}
+
+.mini-line-numbers .mini-line-number {
+  display: block;
+  height: 1.5em;
+  padding-right: 0.3rem;
+}
+
+.mini-code-textarea {
+  flex: 1;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  resize: none;
+  background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+  padding: 1rem;
+  tab-size: 2;
+  caret-color: #d4d4d4;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Custom scrollbar for code editors - Cursor AI style */
+.mini-code-textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mini-code-textarea::-webkit-scrollbar-track {
+  background: #2d2d2d;
+  border-radius: 4px;
+}
+
+.mini-code-textarea::-webkit-scrollbar-thumb {
+  background: #4c4c4c;
+  border-radius: 4px;
+  border: 1px solid #2d2d2d;
+}
+
+.mini-code-textarea::-webkit-scrollbar-thumb:hover {
+  background: #5c5c5c;
+}
+
+.mini-code-textarea::-webkit-scrollbar-corner {
+  background: #2d2d2d;
+}
+
+/* Preview Panel - Exact create.html */
+.mini-preview-panel {
+  position: absolute;
+  top: 0;
+    right: 0;
+  width: 50%;
+  height: 102%;
+  display: flex;
+  flex-direction: column;
+    background: #fff;
+  border-left: 1px solid #333;
+}
+
+.mini-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  padding: 0.4rem 0.8rem;
+  background: #000000;
+  border-bottom: 1px solid #1f2937;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mini-preview-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  flex: 1;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mini-preview-actions {
+    display: flex;
+  gap: 0.5rem;
+    align-items: center;
+}
+
+.mini-preview-btn {
+  background: transparent;
+  color: #ffffff;
+  border: none;
+  padding: 2px 4px;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 6px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-left: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.mini-preview-btn:hover {
+  color: #ffffff;
+}
+
+.mini-preview-btn.primary {
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+  font-weight: 700;
+  padding: 4px 8px;
+  font-size: 0.6rem;
+}
+
+.mini-preview-btn.primary:hover {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+.mini-fullscreen-btn {
+  padding: 0.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  transition: color 0.2s;
+    display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini-fullscreen-btn:hover {
+  color: #ccc;
+}
+
+.mini-preview-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+    background: #fff;
+}
+
+/* Features Section */
+.features-section {
+  padding: 2rem 3rem 6rem 3rem;
+  background: #ffffff;
+}
+
+.features-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+  letter-spacing: -0.5px;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: #666;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2.5rem;
+  margin-top: 2rem;
+}
+
+.feature-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 2rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #1a1a1a, #333);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover::before {
+  transform: scaleX(1);
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  background: #ffffff;
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transition: left 0.5s ease;
+}
+
+.feature-card {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  z-index: 1;
+  border: 2px solid transparent;
+}
+
+/* Gradient border behind the card */
+.feature-card::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: inherit;
+  background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
+  background-size: 300% 300%;
+  z-index: -1;
+  animation: colorShift 3s ease-in-out infinite;
+}
+
+
+.feature-icon svg {
+  width: 28px;
+  height: 28px;
+  color: #1a1a1a;
+}
+
+.feature-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+}
+
+.feature-description {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.feature-link {
+  color: #1a1a1a;
+  text-decoration: none;
+  font-weight: 600;
+    font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: gap 0.2s ease;
+}
+
+.feature-link:hover {
+  gap: 0.8rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .hero-content {
+      grid-template-columns: 1fr;
+    gap: 3rem;
+    text-align: center;
+  }
+  
+  .hero-left {
+    padding-right: 0;
+  }
+  
+  .hero-title {
+    font-size: 3rem;
+  }
+  
+  .mini-editor-container {
+    transform: none;
+    max-width: 500px;
+  }
+  
+  .mini-editor-container:hover {
+    transform: none;
+  }
+  
+  .features-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem 2rem;
+  }
+  
+  .nav-links {
+    display: none;
+  }
+  
+  .hero {
+    padding: 3rem 2rem;
+    min-height: auto;
+    }
+    
+    .hero-title {
+      font-size: 2.5rem;
+    }
+    
+  .hero-description {
+    font-size: 1.1rem;
+  }
+  
+  .hero-cta {
+      flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .hero-stats {
+    gap: 2rem;
+  }
+  
+  .mini-editor-content {
+      flex-direction: column;
+    height: 500px;
+  }
+  
+  .mini-preview-panel {
+    border-left: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .features-section {
+    padding: 4rem 2rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-badge {
+    font-size: 0.8rem;
+  }
+  
+  .btn-primary, .btn-secondary-hero {
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .mini-editor-container {
+    max-width: 100%;
+  }
+  
+  .features-section {
+    padding: 3rem 1.5rem;
+    }
+  }
+  .btn-grey {
+    background-color: black;
+    position: relative; /* light grey fill */
+    right: 3px;
+    color: white;
+    padding: 11px 17px;
+    border-radius: 6px;
+    text-decoration: none;
+     /* same as Get Started's border */
+    font-size: 0.9rem;
+    font-family: inherit;
+    display: inline-block;
+    transition: background-color 0.2s ease;
+}
+
+.btn-grey:hover {
+    background-color: black; /* slightly darker grey on hover */
+}
+
+</style>
+
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+  <a href="{% url 'index' %}" class="logo">STUDIO</a>
+  
+  <div class="nav-links">
+    {% if user.is_authenticated %}
+    <a href="{% url 'main' %}">Home</a>
+    <a href="{% url 'library' %}">Library</a>
+    <a href="{% url 'create' %}">Create</a>
+    <a href="{% url 'help_center' %}">Support</a>
+    {% else %}
+    <a href="{% provider_login_url 'google' %}">Home</a>
+    <a href="{% url 'library' %}">Library</a>
+    <a href="{% provider_login_url 'google' %}">Create</a>
+    <a href="{%  url 'help_center' %}">Support</a>
+    <a href="{% url 'about' %}">About</a>
+    {% endif %}
+
+  </div>
+  
+  <div class="nav-actions" style="display: flex; align-items: center; gap: 8px;">
+
+    {% if user.is_authenticated %}
+        <!-- Username -->
+        <p style="color: #888; margin-right: 30px; margin-top: 15px;">{{ user.username }}</p>
+    
+        <!-- Log Out -->
+        <a href="{% url 'logout' %}" class="btn-secondary" style="background-color: black; color:white;">Log Out</a>
+    
+        <!-- Get Started based on onboarding -->
+        {% if needs_onboarding %}
+            <a href="{% url 'onboarding' %}" class="btn-secondary">Get Started</a>
+        {% else %}
+            <a href="{% url 'main' %}" class="btn-secondary">Get Started</a>
+        {% endif %}
+    
+    {% else %}
+        <!-- If not signed in -->
+        <a class="btn-grey" href="{% provider_login_url 'google' %}?next=" style="display: inline-block; text-decoration: none;">
+            Login
+        </a>
+        <a class="btn-secondary" href="{% provider_login_url 'google' %}?next=">Get Started</a>
+    {% endif %}
+    
+    </div>
+  
+  
+
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-left">
+
+      
+
+                <h1 class="hero-title">
+          <div class="title-main">
+            <span class="color-letter">L</span><span class="color-letter">I</span><span class="color-letter">V</span><span class="color-letter">E</span>
+            <span class="word-space"></span>
+            <span class="color-letter">C</span><span class="color-letter">O</span><span class="color-letter">D</span><span class="color-letter">I</span><span class="color-letter">T</span><span class="color-letter">O</span><span class="color-letter">R</span>
+          </div>
+        </h1>
+        
+        <div class="title-subtitle">Explore Templates. Edit Live. Build Your Own.</div>
+        
+        <p class="hero-description">
+          Meet the place where inspiration becomes creation.
+        </p>
+        
+                 <div class="hero-cta">
+                  {% if user.is_authenticated %}
+        <a href="{% url 'create' %}" class="btn-primary">
+          {% else %}
+          <a href="{% provider_login_url 'google' %}?next=" class="btn-primary">
+            {% endif %}
+
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M14 2V8H20" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Start Coding Now
+        </a>
+        <a href="{% url 'library' %}" class="btn-secondary-hero">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Learn More
+        </a>
+      </div>
+      
+      <div class="hero-stats" style="position: relative; left: 50px;">
+        <div class="stat-box">
+          <span class="stat-number">1k+</span>
+          <span class="stat-label">Active Coders</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-number">100+</span>
+          <span class="stat-label">Projects Created</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-number" style="position: relative; left: 7px;">99.9%</span>
+          <span class="stat-label">Uptime</span>
+        </div>
+        </div>
+      </div>
+      
+    <div class="hero-right">
+      <div class="mini-editor-container">
+        <!-- Navigation Header - Exact create.html -->
+        <div class="mini-nav-header">
+          <div class="mini-nav-left">
+            <div class="mini-nav-logo">STUDIO</div>
+        </div>
+          <div class="mini-nav-center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #fff; cursor: pointer; transition: color 0.2s; margin-right: 0.5rem;">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="text" id="mini-project-title" class="mini-nav-title-input" placeholder="Untitled" value="Demo Project" maxlength="20">
+          </div>
+          <div class="mini-nav-right">
+            <button id="miniAddFileBtn" class="mini-nav-btn primary">Add File</button>
+            <button id="miniMenuBtn" class="mini-nav-btn secondary" title="Menu">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+      </div>
+    </div>
+    
+        <!-- Editor Container - Exact create.html layout -->
+        <div class="mini-editor-container-inner">
+          <!-- Code Panel -->
+          <div class="mini-code-panel">
+            <div class="mini-code-tabs">
+              <div class="mini-code-tabs-left">
+                <button class="mini-code-tab active" data-tab="html">HTML</button>
+                <button class="mini-code-tab" data-tab="css">CSS</button>
+                <button class="mini-code-tab" data-tab="js">JavaScript</button>
+                <button class="mini-code-tab" data-tab="python">
+                  <span>Python</span>
+                </button>
+              </div>
+              <div class="mini-code-tabs-right">
+                <button class="mini-code-fullscreen-btn" title="Fullscreen Code">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="mini-code-editor-container">
+              <div class="mini-line-numbers" id="miniHtmlLineNumbers"></div>
+              <textarea class="mini-code-textarea" id="miniHtmlEditor" placeholder="Enter your HTML code here..." data-file="HTML">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxe Metro</title>
+   
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@200;300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="hero-background"></div>
+    <div class="atmosphere-overlay"></div>
+    <div class="grain-overlay"></div>
+    
+    <div class="floating-elements">
+        <div class="float-shape"></div>
+        <div class="float-shape"></div>
+        <div class="float-shape"></div>
+    </div>
+
+    <div class="header">
+        <div class="logo">Luxury Metro</div>
+        <div class="nav">
+            <a href="#">Suites</a>
+            <a href="#">Dining</a>
+            <a href="#">Spa</a>
+            <a href="#">Events</a>
+            <a href="#">Experience</a>
+            <button class="reserve-btn">Reserve</button>
+        </div>
+    </div>
+    
+    <div class="hero">
+        <div class="hero-badge">Est. 1892 • Urban Sanctuary</div>
+        <h1 class="hero-title" id="heroTitle">OPULENCE</h1>
+        <h2 class="hero-subtitle" id="heroSubtitle">REIMAGINED</h2>
+        <p class="hero-description">
+            Step into a world where architectural grandeur meets contemporary sophistication. Every detail crafted to perfection, every moment designed to inspire.
+        </p>
+        <div class="cta-group">
+            <button class="cta-primary">Book Your Escape</button>
+            <button class="cta-secondary">Virtual Tour</button>
+        </div>
+    </div>
+
+    <div class="hero-details">
+        <div class="detail-item">
+            <span class="detail-number">180</span>
+            <span class="detail-label">Luxury Rooms</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-number">5</span>
+            <span class="detail-label">Star Rating</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-number">24</span>
+            <span class="detail-label">Hour Service</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-number">131</span>
+            <span class="detail-label">Years Legacy</span>
+        </div>
+    </div>
+
+    
+</body>
+</html>
+</textarea>
+        </div>
+        
+            <div class="mini-code-editor-container" id="miniCssEditorContainer" style="display: none;">
+              <div class="mini-line-numbers" id="miniCssLineNumbers"></div>
+              <textarea class="mini-code-textarea" id="miniCssEditor" placeholder="Enter your CSS code here...">
+                
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+body {
+    font-family: 'Playfair Display', 'Georgia', serif;
+    background: #0a0a0a;
+    color: #ffffff;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* Hero Background with Dark Overlay */
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(
+            135deg,
+            rgba(0,0,0,0.7) 0%,
+            rgba(0,0,0,0.4) 30%,
+            rgba(0,0,0,0.6) 70%,
+            rgba(0,0,0,0.8) 100%
+        ),
+        url('https://images.pexels.com/photos/994605/pexels-photo-994605.jpeg?cs=srgb&dl=pexels-fabianwiktor-994605.jpg&fm=jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    z-index: 1;
+    filter: contrast(1.1) brightness(0.8);
+}
+
+/* Atmospheric overlay */
+.atmosphere-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(ellipse at top, rgba(212, 175, 55, 0.05) 0%, transparent 70%),
+        radial-gradient(ellipse at bottom right, rgba(0, 0, 0, 0.8) 0%, transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%);
+    z-index: 2;
+}
+
+/* Elegant grain texture */
+.grain-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><filter id="noise"><feTurbulence baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter></defs><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.03"/></svg>');
+    z-index: 3;
+    pointer-events: none;
+}
+
+/* Professional Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 4rem;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    position: relative;
+    z-index: 100;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+}
+
+.logo {
+    font-size: 1.9rem;
+    font-weight: 400;
+    letter-spacing: 4px;
+    color: #ffffff;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+    position: relative;
+}
+
+.logo::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 50px;
+    height: 2px;
+    background: linear-gradient(45deg, #d4af37, #ffd700);
+    transition: width 0.5s ease;
+}
+
+.logo:hover::after {
+    width: 100%;
+}
+
+.nav {
+    display: flex;
+    gap: 4rem;
+    align-items: center;
+}
+
+.nav a {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 1rem 0;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.nav a::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: #d4af37;
+    transition: width 0.4s ease;
+}
+
+.nav a:hover {
+    color: #ffffff;
+}
+
+.nav a:hover::before {
+    width: 100%;
+}
+
+.reserve-btn {
+    background: linear-gradient(45deg, #d4af37, #ffd700);
+    color: #000;
+    border: none;
+    padding: 1rem 2.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    font-family: 'Montserrat', sans-serif;
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+}
+
+.reserve-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(212, 175, 55, 0.4);
+}
+
+/* Hero Content */
+.hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    position: relative;
+    z-index: 50;
+}
+
+.hero-badge {
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(15px);
+    color: #d4af37;
+    padding: 1rem 3rem;
+    font-size: 0.85rem;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 4rem;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    font-family: 'Montserrat', sans-serif;
+    opacity: 0;
+    animation: fadeInUp 1.2s ease 0.5s forwards;
+}
+
+.hero-title {
+    font-size: 7rem;
+    font-weight: 300;
+    color: #ffffff;
+    margin-bottom: 2rem;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    font-family: 'Playfair Display', serif;
+    line-height: 0.9;
+    position: relative;
+    overflow: hidden;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+}
+
+.hero-title .letter {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(150px) rotateX(90deg);
+    animation: letterReveal 1.2s ease forwards;
+}
+
+@keyframes letterReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(150px) rotateX(90deg);
+    }
+    70% {
+        opacity: 0.9;
+        transform: translateY(-20px) rotateX(45deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg);
+    }
+}
+
+.hero-subtitle {
+    font-size: 3.5rem;
+    font-weight: 200;
+    color: #d4af37;
+    margin-bottom: 3rem;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Playfair Display', serif;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.hero-subtitle .letter {
+    display: inline-block;
+    opacity: 0;
+    transform: translateX(-80px);
+    animation: slideIn 1s ease forwards;
+}
+
+@keyframes slideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(-80px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.hero-description {
+    font-size: 1.4rem;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 4.5rem;
+    font-weight: 300;
+    letter-spacing: 1px;
+    line-height: 1.8;
+    max-width: 750px;
+    opacity: 0;
+    animation: fadeInUp 1.4s ease 2.2s forwards;
+    font-family: 'Montserrat', sans-serif;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Dark CTA Buttons */
+.cta-group {
+    display: flex;
+    gap: 2.5rem;
+    opacity: 0;
+    animation: fadeInUp 1.4s ease 2.8s forwards;
+}
+
+.cta-primary {
+    background: linear-gradient(45deg, #d4af37, #ffd700);
+    color: #000;
+    border: none;
+    padding: 1.6rem 4rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.5s ease;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Montserrat', sans-serif;
+    box-shadow: 0 10px 35px rgba(212, 175, 55, 0.4);
+}
+
+.cta-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #ffd700, #ffed4e);
+    transition: left 0.5s ease;
+    z-index: -1;
+}
+
+.cta-primary:hover::before {
+    left: 0;
+}
+
+.cta-primary:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 50px rgba(212, 175, 55, 0.5);
+}
+
+.cta-secondary {
+    background: rgba(0,0,0,0.3);
+    color: #ffffff;
+    border: 2px solid rgba(255,255,255,0.6);
+    padding: 1.6rem 4rem;
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.5s ease;
+    font-family: 'Montserrat', sans-serif;
+    backdrop-filter: blur(15px);
+}
+
+.cta-secondary:hover {
+    background: rgba(212, 175, 55, 0.1);
+    border-color: #d4af37;
+    color: #d4af37;
+    transform: translateY(-4px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+}
+
+/* Floating dark elements */
+.floating-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.float-shape {
+    position: absolute;
+    opacity: 0.08;
+    animation: darkFloat 10s ease-in-out infinite;
+}
+
+.float-shape:nth-child(1) {
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, #d4af37, #ffd700);
+    border-radius: 50%;
+    top: 10%;
+    left: 5%;
+    animation-delay: 0s;
+}
+
+.float-shape:nth-child(2) {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(45deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+    top: 65%;
+    right: 8%;
+    animation-delay: 4s;
+}
+
+.float-shape:nth-child(3) {
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.15), transparent);
+    border-radius: 30px;
+    top: 25%;
+    right: 12%;
+    animation-delay: 7s;
+}
+
+@keyframes darkFloat {
+    0%, 100% { 
+        transform: translateY(0px) rotate(0deg); 
+        opacity: 0.08;
+    }
+    50% { 
+        transform: translateY(-40px) rotate(8deg); 
+        opacity: 0.12;
+    }
+}
+
+/* Professional details section */
+.hero-details {
+    position: absolute;
+    bottom: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5rem;
+    opacity: 0;
+    animation: fadeIn 1.2s ease 3.5s forwards;
+}
+
+.detail-item {
+    text-align: center;
+    color: rgba(255,255,255,0.7);
+    font-family: 'Montserrat', sans-serif;
+    position: relative;
+}
+
+.detail-item::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 1px;
+    background: #d4af37;
+}
+
+.detail-number {
+    font-size: 2.4rem;
+    font-weight: 200;
+    color: #d4af37;
+    display: block;
+    margin-bottom: 0.8rem;
+    font-family: 'Playfair Display', serif;
+}
+
+.detail-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 300;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+    .hero-title { font-size: 5.5rem; }
+    .hero-subtitle { font-size: 2.8rem; }
+}
+
+@media (max-width: 768px) {
+    .header { padding: 1.5rem 2rem; }
+    .nav { display: none; }
+    .hero-title { 
+        font-size: 3.5rem; 
+        letter-spacing: 4px; 
+        margin-bottom: 1.5rem;
+    }
+    .hero-subtitle { 
+        font-size: 2rem; 
+        letter-spacing: 3px; 
+        margin-bottom: 2rem;
+    }
+    .hero-description { font-size: 1.1rem; margin-bottom: 3rem; }
+    .cta-group { 
+        flex-direction: column; 
+        align-items: center; 
+        gap: 1.5rem;
+    }
+    .cta-primary, .cta-secondary { 
+        padding: 1.3rem 3rem; 
+        width: 100%;
+        max-width: 300px;
+    }
+    .hero-details { 
+        bottom: 3rem; 
+        gap: 3rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title { font-size: 2.8rem; }
+    .hero-subtitle { font-size: 1.6rem; }
+    .hero-details { gap: 2rem; }
+}
+              
+  
+</textarea>
+        </div>
+        
+            <div class="mini-code-editor-container" id="miniJsEditorContainer" style="display: none;">
+              <div class="mini-line-numbers" id="miniJsLineNumbers"></div>
+              <textarea class="mini-code-textarea" id="miniJsEditor" placeholder="Enter your JavaScript code here...">
+// Enhanced letter animation with stagger effect
+function animateLetters(elementId, baseDelay = 100) {
+    const element = document.getElementById(elementId);
+    const text = element.textContent;
+    element.innerHTML = '';
+    
+    text.split('').forEach((letter, index) => {
+        const span = document.createElement('span');
+        span.className = 'letter';
+        span.textContent = letter === ' ' ? '\u00A0' : letter;
+        span.style.animationDelay = `${1200 + (index * baseDelay)}ms`;
+        element.appendChild(span);
+    });
+}
+
+// Parallax effect for background
+function parallaxBackground() {
+    const scrolled = window.pageYOffset;
+    const background = document.querySelector('.hero-background');
+    const speed = scrolled * 0.3;
+    background.style.transform = `translateY(${speed}px) scale(1.05)`;
+}
+
+// Enhanced ripple effect for dark theme
+function addDarkRipple(button) {
+    button.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        
+        const isGold = this.classList.contains('cta-primary') || this.classList.contains('reserve-btn');
+        const rippleColor = isGold ? 'rgba(0,0,0,0.3)' : 'rgba(212,175,55,0.4)';
+        
+        ripple.style.cssText = `
+            position: absolute;
+            border-radius: 50%;
+            background: ${rippleColor};
+            transform: scale(0);
+            animation: ripple 0.7s ease-out;
+            width: ${size}px;
+            height: ${size}px;
+            left: ${x}px;
+            top: ${y}px;
+            pointer-events: none;
+        `;
+        
+        this.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 700);
+    });
+}
+
+// Mouse movement parallax for floating elements
+function setupMouseParallax() {
+    let mouseX = 0, mouseY = 0;
+    
+    document.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX - window.innerWidth / 2) / 50;
+        mouseY = (e.clientY - window.innerHeight / 2) / 50;
+    });
+    
+    function animateElements() {
+        const shapes = document.querySelectorAll('.float-shape');
+        shapes.forEach((shape, index) => {
+            const speed = (index + 1) * 0.5;
+            const currentTransform = shape.style.transform || '';
+            const newTransform = `translate(${mouseX * speed}px, ${mouseY * speed}px)`;
+            shape.style.transform = currentTransform.includes('translateY') 
+                ? currentTransform + ` ${newTransform}` 
+                : newTransform;
+        });
+        requestAnimationFrame(animateElements);
+    }
+    animateElements();
+}
+
+// Initialize all effects
+window.addEventListener('load', () => {
+    // Staggered letter animations
+    animateLetters('heroTitle', 180);
+    setTimeout(() => animateLetters('heroSubtitle', 120), 1000);
+    
+    // Add interactions to all buttons
+    document.querySelectorAll('button').forEach(addDarkRipple);
+    
+    // Setup mouse parallax
+    setupMouseParallax();
+});
+
+// Scroll effects
+document.addEventListener('scroll', parallaxBackground);
+
+// Add enhanced CSS animations
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+    @keyframes ripple {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+    
+    button {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-background {
+        transition: transform 0.1s ease-out;
+    }
+`;
+document.head.appendChild(styleSheet);  
+</textarea>
+        </div>
+        
+          <!-- Preview Panel - Exact create.html -->
+          <div class="mini-preview-panel">
+            <div class="mini-preview-header">
+              <h3 class="mini-preview-title">Live Preview</h3>
+              <div class="mini-preview-actions">
+                <button type="button" id="miniFullHeightBtn" class="mini-preview-btn" style="font-size: 0.6rem; padding: 0.2rem 0.4rem;">Full Height</button>
+                <button type="button" id="miniExitFullHeightBtn" class="mini-preview-btn" style="display: none; font-size: 0.6rem; padding: 0.2rem 0.4rem;">Exit Full Height</button>
+                <button type="button" id="miniSaveAsNewBtn" class="mini-preview-btn primary">Post</button>
+                <button class="mini-fullscreen-btn" id="miniFullscreenBtn" title="Fullscreen Preview">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <iframe class="mini-preview-frame" id="miniPreviewFrame"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section" id="features">
+  <div class="features-container">
+    <div class="section-header">
+      <h2 class="section-title">Everything You Need to Build</h2>
+      <p class="section-subtitle">
+        Powerful tools and features designed for modern web development. 
+        From simple prototypes to complex applications.
+      </p>
+    </div>
+        
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M14 2V8H20" stroke="currentColor" stroke-width="2"/>
+            <path d="M16 13H8" stroke="currentColor" stroke-width="2"/>
+            <path d="M16 17H8" stroke="currentColor" stroke-width="2"/>
+            <path d="M10 9H8" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Live Preview</h3>
+        <p class="feature-description">
+          See your changes instantly with real-time preview. 
+          No need to refresh - your code updates live as you type.
+        </p>
+        {% if user.is_authenticated %}  
+          <a href="{% url 'create' %}" class="feature-link">
+        {% endif %}
+        {% if not user.is_authenticated %}
+          <a href="{% provider_login_url 'google' %}?next=" class="feature-link">
+        {% endif %}
+          Try it now
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+        
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2"/>
+            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Multiple Languages</h3>
+        <p class="feature-description">
+          Support for HTML, CSS, JavaScript, and Python. 
+          Write in any language with syntax highlighting and autocomplete.
+        </p>
+        {% if user.is_authenticated %}
+          <a href="{% url 'create' %}" class="feature-link">
+        {% endif %}
+        {% if not user.is_authenticated %}
+          <a href="{% provider_login_url 'google' %}?next=" class="feature-link">
+        {% endif %}
+          Explore
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17 21V19A4 4 0 0 0 13 15H5A4 4 0 0 0 1 19V21" stroke="currentColor" stroke-width="2"/>
+            <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+            <path d="M23 21V19A4 4 0 0 0 19 15H16" stroke="currentColor" stroke-width="2"/>
+            <path d="M16 3.13A4 4 0 0 1 16 11.13" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Collaboration</h3>
+        <p class="feature-description">
+          Work together with your team in real-time. 
+          Share projects, comment on code, and build together.
+        </p>
+        {% if user.is_authenticated %}
+          <a href="{% url 'library' %}" class="feature-link">
+        {% endif %}
+        {% if not user.is_authenticated %}
+          <a href="{% provider_login_url 'google' %}?next=" class="feature-link">
+        {% endif %}
+          Start collaborating
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 15A2 2 0 0 1 19 17H7L4 20V5A2 2 0 0 1 6 3H19A2 2 0 0 1 21 5Z" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Template Library</h3>
+        <p class="feature-description">
+          Access thousands of professional templates. 
+          Start with proven designs and customize to your needs.
+        </p>
+        {% if user.is_authenticated %}
+          <a href="{% url 'library' %}" class="feature-link">
+        {% endif %}
+        {% if not user.is_authenticated %}
+          <a href="{% provider_login_url 'google' %}?next=" class="feature-link">
+        {% endif %}
+          Browse templates
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2"/>
+            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Auto Save</h3>
+        <p class="feature-description">
+          Never lose your work again. 
+          All changes are automatically saved as you type.
+        </p>
+        {% if user.is_authenticated %}
+          <a href="{% url 'create' %}" class="feature-link">
+        {% endif %}
+        {% if not user.is_authenticated %}
+          <a href="{% provider_login_url 'google' %}?next=" class="feature-link">
+        {% endif %}
+          <p style="position: relative; top: 26px;"> Start coding</p>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="position: relative; top: 18px;">
+            <path d="M5 12H19M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Smart Search</h3>
+        <p class="feature-description">
+          Find templates, code snippets, and resources instantly. 
+          AI-powered search helps you discover what you need.
+        </p>
+        {% if user.is_authenticated %}
+          <a href="{% url 'library' %}" class="feature-link">
+        {% endif %}
+        {% if not user.is_authenticated %}
+          <a href="{% provider_login_url 'google' %}?next=" class="feature-link">
+        {% endif %}
+          Search now
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+  
+<section class="features-section" id="features">
+  <div class="features-container" style="position: relative; top: 70px;">
+    <div class="section-header">
+      <h2 class="section-title">Create Instantly.</h2>
+      <p class="section-subtitle">
+        “Write code, see results, and share your work in seconds — all in your browser.”
+      </p>
+    </div>
+    <style>
+      .video-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 20px;
+      }
+      
+      .video-container video {
+          max-width: 740px; /* set desired max width */
+          height: auto;     /* keep aspect ratio */
+          border: 2px solid black;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+          cursor: pointer;
+          display: block;
+      }
+      </style>
+      
+      <div class="video-container">
+          <video id="adVideo" autoplay muted loop playinsline>
+              <source src="{% static 'app/advert.mp4' %}" type="video/mp4">
+          </video>
+      </div>
+      
+      
+  </div>
+</section>
+<footer style="background: #111; color: #fff; padding: 36px 0 0 0; margin-top: 48px;">
+  <div style="max-width: 1300px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: flex-start; gap: 0 32px;">
+    <div style="flex: 0 0 180px; min-width: 140px; margin-bottom: 32px; display: flex; align-items: flex-start;">
+      <span style="font-size: 2.7rem; font-weight: 900; font-family: 'Montserrat', 'Inter', Arial, sans-serif; letter-spacing: 0.08em; color: #fff;">STUDIO</span>
+    </div>
+    <div style="flex: 1 1 0; display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 0 20px; margin-left: 250px;">
+      <div style="flex: 1 1 180px; min-width: 160px; margin-bottom: 32px; text-align: left;">
+        <div style="font-size: 0.98rem; font-weight: 600; font-family: 'Montserrat', 'Inter', Arial, sans-serif; letter-spacing: 0.04em; margin-bottom: 18px; color: #fff;">Industries</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Healthcare</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Sports</div>
+        <div style="color: #bbb; margin-bottom: 10px;">ECommerce</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Construction</div>
+        <div style="color: #bbb;">Club</div>
+      </div>
+      <div style="flex: 1 1 180px; min-width: 160px; margin-bottom: 32px; text-align: left;">
+        <div style="font-size: 0.98rem; font-weight: 600; font-family: 'Montserrat', 'Inter', Arial, sans-serif; letter-spacing: 0.04em; margin-bottom: 18px; color: #fff;">Quick Links</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Reviews</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Terms & Condition</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Disclaimer</div>
+        <div style="color: #bbb;">Site Map</div>
+      </div>
+      <div style="flex: 1 1 340px; min-width: 260px; margin-bottom: 10px;">
+        <div style="margin-bottom: 18px; font-size: 0.98rem; font-weight: 600; font-family: 'Montserrat', 'Inter', Arial, sans-serif; letter-spacing: 0.04em; color: #fff;">Customer Support</div>
+        <div class="custom-onboarding-form" style="background: none; box-shadow: none; border-radius: 0; padding: 0; margin: 0;">
+          <div style="color: #bbb; font-size: 0.98rem; margin-bottom: 14px;">
+            Our support team is available 24/7. If you have questions, please leave your message below.
+          </div>
+          <style>
+            /* Overlay background */
+            .overlay {
+              position: fixed;
+              inset: 0;
+              background: rgba(0, 0, 0, 0.4);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              z-index: 9998;
+              opacity: 0;
+              visibility: hidden;
+              transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+          
+            /* Show animation */
+            .overlay.show {
+              opacity: 1;
+              visibility: visible;
+            }
+          
+            /* Card styling */
+            .message-card {
+              background: #fff;
+              color: #333;
+              font-family: "Segoe UI", sans-serif;
+              padding: 1.5rem 2rem;
+              border-radius: 12px;
+              max-width: 400px;
+              width: 90%;
+              box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+              text-align: center;
+              transform: translateY(-15px);
+              transition: transform 0.3s ease;
+            }
+          
+            /* Card slide-in effect */
+            .overlay.show .message-card {
+              transform: translateY(0);
+            }
+          
+            .message-card h2 {
+              font-size: 1.2rem;
+              margin-bottom: 0.75rem;
+              font-weight: 600;
+            }
+          
+            .message-card p {
+              font-size: 0.95rem;
+              margin: 0.5rem 0;
+              color: #555;
+            }
+          
+            .close-btn {
+              margin-top: 1rem;
+              background: #000;
+              color: #fff;
+              border: none;
+              padding: 0.6rem 1.2rem;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 0.9rem;
+              transition: background 0.2s;
+            }
+          
+            .close-btn:hover {
+              background: #333;
+            }
+          
+            /* Custom input styles (white theme) */
+            .custom-input {
+              margin-bottom: 0;
+              border-bottom: 2px solid #fff;
+              background: transparent;
+              color: #fff;
+              font-size: 1.05rem;
+              padding: 7px 0;
+              width: 90%;
+              max-width: 260px;
+              outline: none;
+            }
+          
+            .custom-send-btn {
+              background: transparent;
+              border: none;
+              color: #fff;
+              font-size: 1.2rem;
+              cursor: pointer;
+              padding: 0 0 0 8px;
+              display: flex;
+              margin-right: 16px;
+              margin-top: 11px;
+            }
+          </style>
+          
+          <!-- Help Center Form -->
+          <form method="post" id="helpForm" action="{% url 'help_center' %}" style="width: 100%; display: flex; align-items: center; position: relative;">
+            {% csrf_token %}
+            <input class="custom-input" type="text" name="support_query" placeholder="Type your message here..." id="helpInput" />
+            <button class="custom-send-btn" type="submit" style="position: relative; bottom: 17px;">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+          
+          <!-- Overlay and Card -->
+          <div class="overlay" id="messageOverlay">
+            <div class="message-card">
+              <h2>Please go to Help Center</h2>
+              <p id="searchResult"></p>
+              <button class="close-btn" onclick="closeMessage()">Close</button>
+              <p style="position: relative; top: 4px;">
+                  Visit our <a href="{% url 'help_center' %}" style="color: black;">Help Center</a> to share complete details about your issue.
+              
+              </p>
+            </div>
+          </div>
+          
+          <script>
+            const overlay = document.getElementById("messageOverlay");
+            const helpInput = document.getElementById("helpInput");
+            const searchResult = document.getElementById("searchResult");
+          
+            function showMessage() {
+              const query = helpInput.value.trim();
+              searchResult.textContent = query ? `You wrote: "${query}"` : "";
+              overlay.classList.add("show");
+            }
+          
+            function closeMessage() {
+              overlay.classList.remove("show");
+            }
+          
+            // Form submission trigger
+            document.getElementById("helpForm").addEventListener("submit", function(e) {
+              e.preventDefault(); // prevent actual form submission for demo
+              showMessage();
+            });
+          
+            // Close when clicking outside
+            overlay.addEventListener("click", function(e) {
+              if (e.target === overlay) {
+                closeMessage();
+              }
+            });
+          </script>
+        </div>
+        <div style="margin-top: 24px;">
+          <div style="color: #bbb; font-size: 0.98rem; display: flex; align-items: center;">
+            <i class="fas fa-question-circle" style="margin-right: 10px; color: #bbb;"></i>
+            <a href="/faq" style="color: #bbb; font-weight: 500; text-decoration: none;">Visit our FAQ</a>
+          </div>
+        </div>
+        <style>
+          .custom-onboarding-form { width: 100%; max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; align-items: flex-start; background: none; }
+          .custom-input { width: 90%; max-width: 260px; font-size: 1.05rem; border: none; border-bottom: 2px solid #fff; outline: none; padding: 7px 0; margin-bottom: 32px; background: transparent; color: #fff; transition: border-color 0.2s; }
+          .custom-input:focus { border-bottom: 2.5px solid #fff; }
+          .custom-input::placeholder { color: #fff; opacity: 1; }
+          .custom-btn-row { width: 100%; display: flex; flex-direction: row; gap: 8px; justify-content: flex-end; }
+          .custom-ok-btn { width: auto; min-width: 48px; align-self: flex-end; padding: 7px 16px; background: #fff; color: #111; font-size: 0.98rem; font-family: inherit; font-weight: 500; border: 2px solid #111; border-radius: 0; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: background 0.22s, color 0.22s, box-shadow 0.18s, transform 0.18s, opacity 0.3s; display: flex; align-items: center; justify-content: center; letter-spacing: 0.04em; }
+          .custom-ok-btn:hover, .custom-ok-btn:active { background: #111; color: #fff; box-shadow: 0 4px 16px rgba(34,34,34,0.13); transform: translateY(-2px) scale(1.04); }
+        </style>
+      </div>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: center; align-items: center; gap: 18px; margin: 32px 0 0 0;">
+    <a href="#" class="footer-social-circle" style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 2px solid #bbb; color: #bbb; font-size: 1.3rem; transition: border 0.2s, color 0.2s; text-decoration: none;">
+      <i class="fab fa-instagram"></i>
+    </a>
+    <a href="#" class="footer-social-circle" style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 2px solid #bbb; color: #bbb; font-size: 1.3rem; transition: border 0.2s, color 0.2s; text-decoration: none;">
+      <i class="fab fa-tiktok"></i>
+    </a>
+  </div>
+  <div style="text-align: center; color: #bbb; font-size: 0.97rem; margin-top: 24px; padding-bottom: 18px;">&copy; 2025 Studio. All rights reserved.</div>
+</footer>
+<script>
+// Mini Editor Functionality - Exact create.html
+const miniHtmlEditor = document.getElementById('miniHtmlEditor');
+const miniCssEditor = document.getElementById('miniCssEditor');
+const miniJsEditor = document.getElementById('miniJsEditor');
+const miniPreviewFrame = document.getElementById('miniPreviewFrame');
+const miniTabs = document.querySelectorAll('.mini-code-tab');
+
+// File Explorer Elements
+
+
+// Navigation Elements
+const miniAddFileBtn = document.getElementById('miniAddFileBtn');
+const miniMenuBtn = document.getElementById('miniMenuBtn');
+const miniProjectTitle = document.getElementById('mini-project-title');
+
+// Line numbering functionality - Exact create.html
+function updateLineNumbers(textarea, lineNumbersElement) {
+  const lines = textarea.value.split('\n');
+  lineNumbersElement.innerHTML = '';
+  
+  for (let i = 1; i <= lines.length; i++) {
+    const lineNumber = document.createElement('div');
+    lineNumber.className = 'mini-line-number';
+    lineNumber.textContent = i;
+    lineNumbersElement.appendChild(lineNumber);
+  }
+}
+
+// Initialize line numbers for all editors
+const miniHtmlLineNumbers = document.getElementById('miniHtmlLineNumbers');
+const miniCssLineNumbers = document.getElementById('miniCssLineNumbers');
+const miniJsLineNumbers = document.getElementById('miniJsLineNumbers');
+
+// Update line numbers when content changes
+miniHtmlEditor.addEventListener('input', () => {
+  updateLineNumbers(miniHtmlEditor, miniHtmlLineNumbers);
+});
+
+miniCssEditor.addEventListener('input', () => {
+  updateLineNumbers(miniCssEditor, miniCssLineNumbers);
+});
+
+miniJsEditor.addEventListener('input', () => {
+  updateLineNumbers(miniJsEditor, miniJsLineNumbers);
+});
+
+// Sync scroll between textarea and line numbers
+miniHtmlEditor.addEventListener('scroll', () => {
+  miniHtmlLineNumbers.scrollTop = miniHtmlEditor.scrollTop;
+});
+
+miniCssEditor.addEventListener('scroll', () => {
+  miniCssLineNumbers.scrollTop = miniCssEditor.scrollTop;
+});
+
+miniJsEditor.addEventListener('scroll', () => {
+  miniJsLineNumbers.scrollTop = miniJsEditor.scrollTop;
+});
+
+
+
+// Tab switching functionality - Exact create.html
+miniTabs.forEach(tab => {
+  tab.addEventListener('click', function() {
+    const tabType = this.getAttribute('data-tab');
+    
+    // Check if Python tab is clicked
+    if (tabType === 'python') {
+      alert('Python upgrade needed! This feature requires a premium subscription.');
+      return;
+    }
+    
+    // Remove active class from all tabs
+    miniTabs.forEach(t => t.classList.remove('active'));
+    // Add active class to clicked tab
+    this.classList.add('active');
+    
+    // Hide all editor containers
+    document.querySelector('.mini-code-editor-container').style.display = 'none';
+    document.getElementById('miniCssEditorContainer').style.display = 'none';
+    document.getElementById('miniJsEditorContainer').style.display = 'none';
+    
+    // Show the corresponding editor container
+    if (tabType === 'html') {
+      document.querySelector('.mini-code-editor-container').style.display = 'flex';
+    } else if (tabType === 'css') {
+      document.getElementById('miniCssEditorContainer').style.display = 'flex';
+    } else if (tabType === 'js') {
+      document.getElementById('miniJsEditorContainer').style.display = 'flex';
+    }
+  });
+});
+
+// Live preview update function - CSS and JS help display HTML like create.html
+function updateMiniPreview() {
+  const html = miniHtmlEditor.value;
+  const css = miniCssEditor.value;
+  const js = miniJsEditor.value;
+  
+  const fullHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>STUDIO Demo</title>
+      <style>${css}</style>
+    </head>
+    <body>
+      ${html}
+      <script>${js}<\/script>
+    </body>
+    </html>
+  `;
+  
+  // Use srcdoc for immediate update
+  miniPreviewFrame.srcdoc = fullHtml;
+}
+
+// Event Listeners
+miniAddFileBtn.addEventListener('click', () => {
+  alert('Add File functionality - Demo only');
+});
+miniMenuBtn.addEventListener('click', () => {
+  alert('Menu functionality - Demo only');
+});
+
+// Add event listeners for live preview - CSS and JS help display HTML
+miniHtmlEditor.addEventListener('input', updateMiniPreview);
+miniCssEditor.addEventListener('input', updateMiniPreview);
+miniJsEditor.addEventListener('input', updateMiniPreview);
+
+// Initialize everything on page load
+document.addEventListener('DOMContentLoaded', function() {
+  updateMiniPreview();
+  
+  // Initialize line numbers for all editors
+  updateLineNumbers(miniHtmlEditor, miniHtmlLineNumbers);
+  updateLineNumbers(miniCssEditor, miniCssLineNumbers);
+  updateLineNumbers(miniJsEditor, miniJsLineNumbers);
+});
+
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  });
+});
+
+// Animation on scroll
+document.addEventListener('DOMContentLoaded', function() {
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+  
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, observerOptions);
+  
+  // Observe feature cards
+  document.querySelectorAll('.feature-card').forEach(card => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    card.style.transition = 'all 0.6s ease';
+    observer.observe(card);
+  });
+});
+
+// Hero animations
+document.addEventListener('DOMContentLoaded', function() {
+  const heroElements = document.querySelectorAll('.hero-badge, .hero-title, .hero-description, .hero-cta, .hero-stats');
+  
+  heroElements.forEach((element, index) => {
+    element.style.opacity = '0';
+    element.style.transform = 'translateY(30px)';
+    element.style.transition = 'all 0.6s ease';
+    
+    setTimeout(() => {
+      element.style.opacity = '1';
+      element.style.transform = 'translateY(0)';
+    }, 200 + (index * 100));
+  });
+  
+  // Animate mini editor container
+  const miniEditor = document.querySelector('.mini-editor-container');
+  miniEditor.style.opacity = '0';
+  miniEditor.style.transform = 'perspective(1000px) rotateY(-5deg) rotateX(5deg) translateY(30px)';
+  miniEditor.style.transition = 'all 0.8s ease';
+  
+  setTimeout(() => {
+    miniEditor.style.opacity = '1';
+    miniEditor.style.transform = 'perspective(1000px) rotateY(-5deg) rotateX(5deg) translateY(0)';
+  }, 800);
+});
+</script>
+{% endblock %}
+

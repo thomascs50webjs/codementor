@@ -1,0 +1,123 @@
+{% extends "app/base.html" %}
+{% block title %}Home - TT7 MEDIA{% endblock %}
+
+{% block body %}
+  <nav>
+    <div class="logo">STUDIO</div>
+    <div class="nav-links">
+      <div class="topbar">
+            {% if user.is_authenticated %}
+          <a href="{% url 'logout' %}">{{ user.username }} </a>
+          {% endif %}
+          <a href="{% url 'index' %}">Work</a>
+          <a href="{% url 'index' %}">About</a>
+
+          <a href="{% url 'index' %}">Contact</a>
+          {% if not user.is_authenticated %}
+          <a href="{% url 'login' %}">Register</a>
+          {% else %}
+          <a href="{% url 'logout' %}">Log Out</a>
+          {% endif %}
+        </div>
+  </nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <h1>MentorAI<br>Coding</h1>
+    <p>We create exceptional digital experiences through minimalist design and strategic thinking.</p>
+    <a href="{% url 'main' %}" class="cta">GET STARTED</a>
+  </div>
+</section>
+
+<section class="section" id="work">
+  <h2 class="section-title">OUR APPROACH</h2>
+  <div class="grid">
+    <div class="card">
+      <div class="card-number">01</div>
+      <h3 class="card-title">STRATEGY</h3>
+      <p class="card-text">Every project begins with deep understanding of your goals and user needs.</p>
+    </div>
+    <div class="card">
+      <div class="card-number">02</div>
+      <h3 class="card-title">DESIGN</h3>
+      <p class="card-text">Clean, purposeful design that communicates clearly and drives results.</p>
+    </div>
+    <div class="card">
+      <div class="card-number">03</div>
+      <h3 class="card-title">EXECUTION</h3>
+      <p class="card-text">Flawless implementation with attention to every detail and interaction.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Smooth scrolling
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      document.querySelector(this.getAttribute('href')).scrollIntoView({
+        behavior: 'smooth'
+      });
+    });
+  });
+
+  // Parallax effect
+  window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+    const hero = document.querySelector('.hero');
+    hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+  });
+
+  // Cards animation
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animation = 'fadeInUp 0.8s ease forwards';
+      }
+    });
+  }, { threshold: 0.3, rootMargin: '0px 0px -50px 0px' });
+
+  document.querySelectorAll('.card').forEach(card => {
+    card.style.opacity = '0';
+    observer.observe(card);
+  });
+
+  // Cursor
+  const cursor = document.createElement('div');
+  cursor.className = 'cursor';
+  document.body.appendChild(cursor);
+
+  const cursorStyle = document.createElement('style');
+  cursorStyle.textContent = `
+    .cursor {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #000;
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.15s ease;
+      mix-blend-mode: difference;
+    }
+    .cursor.grow {
+      transform: scale(3);
+      background: #000;
+    }
+  `;
+  document.head.appendChild(cursorStyle);
+
+  document.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX - 10 + 'px';
+    cursor.style.top = e.clientY - 10 + 'px';
+  });
+
+  document.querySelectorAll('a, .card').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('grow'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('grow'));
+  });
+</script>
+  <footer>
+    <p>© 2025 Studio. All rights reserved.</p>
+  </footer>
+{% endblock %}

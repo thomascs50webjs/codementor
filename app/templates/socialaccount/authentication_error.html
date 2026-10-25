@@ -1,0 +1,44 @@
+{% extends "app/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Login Error" %}{% endblock %}
+
+{% block body %}
+<section class="d-flex justify-content-center align-items-center bg-white" style="min-height: 100vh;">
+    <div class="card border-0 shadow-sm p-4 rounded-4 text-center" style="max-width: 420px; width: 100%;">
+        
+        <!-- Title -->
+        <h2 class="fw-bold text-dark mb-2" style="font-size: 1.8rem;">
+            {% trans "Login Error" %}
+        </h2>
+        <p class="text-secondary mb-4" style="font-size: 0.95rem;">
+            {% trans "An error occurred while attempting to log in via your third-party account." %}
+        </p>
+
+        <!-- Buttons -->
+        <div class="d-grid gap-2">
+            <a href="{% url 'account_login' %}" 
+               class="btn rounded-4 py-2 border border-dark"
+               style="background-color: black; color: white; font-weight: 600; letter-spacing: 0.3px;">
+                {% trans "Sign In" %}
+            </a>
+            <a href="{% url 'account_signup' %}" 
+               class="btn rounded-4 py-2 border border-2"
+               style="background-color: white; color: black; font-weight: 600; letter-spacing: 0.3px;">
+                {% trans "Sign Up" %}
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Hover Styles -->
+<style>
+    a.btn {
+        transition: all 0.4s ease;
+    }
+    a.btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+</style>
+{% endblock %}

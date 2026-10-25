@@ -1,0 +1,2421 @@
+{% extends "app/base.html" %}
+{% block title %}Edit - STUDIO{% endblock %}
+
+{% block body %}
+{% load socialaccount %}
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .layout-root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+  }
+  .page-flex {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+    background: #fff;
+  }
+
+  /* Modal Card Styles */
+  .modal-card {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border: 2px solid #111;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    width: 400px;
+    min-width: 0;
+    max-width: 90vw;
+    min-height: 0;
+    max-height: 90vh;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    padding: 1.2rem;
+    z-index: 99999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s cubic-bezier(.4,0,.2,1), visibility 0.25s cubic-bezier(.4,0,.2,1);
+  }
+  .modal-card.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .modal-content {
+    position: relative;
+  }
+  .close-modal {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    background: none;
+    border: none;
+    color: #111;
+    font-size: 1.3rem;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .close-modal:hover {
+    color: #e00;
+  }
+  .modal-content h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 1rem 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .modal-content p {
+    font-size: 1rem;
+    color: #666;
+    margin: 0;
+    line-height: 1.5;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .contact-info {
+    margin-top: 1.5rem !important;
+    font-size: 0.95rem !important;
+    color: #888 !important;
+  }
+  .contact-link {
+    color: #111;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+  }
+  .contact-link:hover {
+    color: #666;
+    text-decoration: underline;
+  }
+  
+  /* Premium Features Modal Styles */
+  .premium-features-content {
+    text-align: center;
+    padding: 0;
+  }
+  .premium-header {
+    margin-bottom: 2rem;
+  }
+  .premium-icon {
+    margin-bottom: 1rem;
+  }
+  .premium-header h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 0.5rem;
+  }
+  .premium-header p {
+    color: #666;
+    font-size: 1rem;
+  }
+  .premium-features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+  }
+  .premium-features-list .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-align: left;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #eee;
+  }
+  .premium-features-list .feature-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #eee;
+  }
+  .premium-features-list .feature-text h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111;
+    margin: 0 0 0.3rem 0;
+  }
+  .premium-features-list .feature-text p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+  }
+  .premium-cta {
+    margin-top: 1.5rem;
+  }
+  .upgrade-btn {
+    background: linear-gradient(90deg, #232323 80%, #444 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+  }
+  .upgrade-btn:hover {
+    background: linear-gradient(90deg, #111 80%, #232323 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(34,34,34,0.13);
+  }
+</style>
+
+
+
+
+
+
+
+  <div class="layout-root">
+    <div class="page-flex">
+    <div class="sidebar">
+      <div class="sidebar-logo" style="font-family: 'Montserrat',
+    sans-serif; font-size: 1.5rem; font-weight: 700; color: #111; margin-left: 0.5rem;">STUDIO</div>
+      <div class="sidebar-tools">
+        <a href="{% url 'create' %}" class="create-btn-small" style="text-decoration:none; margin-bottom: 1.2rem; margin-top: 0.5rem;">
+          <span style="font-size:1.1em;">＋</span> Create
+        </a>
+        <a href="{% url 'library' %}" class="sidebar-tool-btn" style="text-decoration:none;">
+          <span class="icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="16" height="16" rx="2" stroke="#111" stroke-width="2"/>
+              <circle cx="14" cy="6" r="1.5" fill="#111"/>
+              <path d="M4 14L7 10L10 12L13 9L16 14" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          Library
+          <span style="margin-right: 2px; font-size: 0.65rem; color: #fff; background: #f7b500; padding: 1px 4px; border-radius: 3px; font-weight: 700; letter-spacing: 0.02em;">PRO</span>
+        </a>
+        <a href="{% url 'library' %}" class="sidebar-tool-btn" id="search-btn" type="button" style="margin-bottom: 1rem;">
+          <span class="icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="8" r="6" stroke="#111" stroke-width="2"/>
+              <line x1="12" y1="12" x2="16" y2="16" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          Search
+          <span style="margin-right: 2px; font-size: 0.65rem; color: #fff; background: #f7b500; padding: 1px 4px; border-radius: 3px; font-weight: 700; letter-spacing: 0.02em;">PRO</span>
+        </a>
+      </div>
+      
+      <div class="sidebar-section-label" style="position: relative; left: 33px;">Main</div>
+      <div class="sidebar-buttons" style="margin-top: 20px;">
+        {% if user.is_authenticated %}
+        <a href="{% url 'projects' %}" class="sidebar-btn"><span>Your Projects</span></a>
+    {% endif %}
+    
+    {% if not user.is_authenticated %}
+        <a href="{% url 'main' %}" class="sidebar-btn"><span>Your Projects</span></a>
+    {% endif %}        <a href="{% url 'main' %}" class="sidebar-btn active"><span>Home</span></a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'profile' %}" class="sidebar-btn"><span>Profile</span></a>
+    {% endif %}
+    
+    {% if not user.is_authenticated %}
+        <a href="{% url 'main' %}" class="sidebar-btn"><span>Profile</span></a>
+    {% endif %}
+        <a href="{% url 'settings' %}" class="sidebar-btn"><span>Settings</span></a>
+      </div>
+      <div class="sidebar-extra-section">
+        <div class="sidebar-section-label" style="position: relative; left: 34px; margin-bottom: 15px;">Support</div>
+        <a href="{% url 'help_center' %}" class="sidebar-btn"><span>Help Center</span></a>
+        <a href="https://codingeditor.slack.com/archives/C097C03BCA1" class="sidebar-btn"><span>Community</span></a>
+        <a  href="{% url 'logout' %}" type="button" class="sidebar-btn" id="logout-btn"><span>Logout</span></a>
+      </div>
+      <div class="sidebar-bottom">
+        <hr class="sidebar-divider" />
+        <a class="sidebar-logout" href="{% url 'main' %}" style="width: 148px !important; margin-right: 3px;">Home</a>
+        <div class="sidebar-actions-row">
+          <a class="sidebar-home" title="Home" href="{% url 'main' %}">
+            <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 22L24 8L40 22" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 20V40C10 41.1046 10.8954 42 12 42H36C37.1046 42 38 41.1046 38 40V20" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="18" y="30" width="12" height="12" rx="2" stroke="currentColor" stroke-width="3"/>
+            </svg>
+          </a>
+          <a href="{% url 'index' %}" class="sidebar-logout-icon" id="logout-btn-icon" title="Logout" type="button">
+            <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="8" width="28" height="32" rx="3" stroke="currentColor" stroke-width="3"/>
+              <path d="M14 24H34" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <path d="M28 18L34 24L28 30" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <button class="sidebar-help" id="advice-btn" title="Advice">?</button>
+        </div>
+      </div>
+    </div>
+    <div class="main-content">
+      <!-- Professional Top Bar -->
+      <div class="top-bar">
+        <div class="top-bar-container">
+          <div class="top-bar-left">
+            <div class="breadcrumb">
+              <span class="breadcrumb-item">Templates</span>
+              <span class="breadcrumb-separator">/</span>
+              <span class="breadcrumb-item active">Popular Designs</span>
+            </div>
+            <h1 class="page-title" style="font-family: 'Montserrat',
+    sans-serif; font-size: 2rem; font-weight: 700; color: #111;">Popular Design Templates</h1>
+          </div>
+          <div class="top-bar-right">
+            <div class="top-bar-actions">
+              <div class="view-toggle">
+                <button class="view-btn active" data-view="grid" title="Grid View">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </button>
+                <button class="view-btn" data-view="list" title="List View">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="8" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="8" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="8" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="3" y1="6" x2="3.01" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="3" y1="12" x2="3.01" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="3" y1="18" x2="3.01" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="user-menu">
+                <button class="user-menu-btn" id="user-menu-btn">
+                  <div class="user-avatar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="8" r="5" stroke="currentColor" stroke-width="2"/>
+                      <path d="M20 21C20 16.5817 16.4183 13 12 13C7.58172 13 4 16.5817 4 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <span class="user-name">{{ request.user.username }}</span>
+                  <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <div class="user-dropdown-menu" id="user-dropdown-menu">
+                  <div class="dropdown-header">
+                    <div class="dropdown-user-info">
+                      <div class="dropdown-avatar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="12" cy="8" r="5" stroke="currentColor" stroke-width="2"/>
+                          <path d="M20 21C20 16.5817 16.4183 13 12 13C7.58172 13 4 16.5817 4 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                      </div>
+                      <div class="dropdown-user-details">
+                        <div class="dropdown-username">{{ request.user.username }}</div>
+                        <div class="dropdown-email">{{ request.user.email|default:"No email" }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dropdown-divider"></div>
+                  <a href="{% url 'profile' %}" class="dropdown-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="8" r="5" stroke="currentColor" stroke-width="2"/>
+                      <path d="M20 21C20 16.5817 16.4183 13 12 13C7.58172 13 4 16.5817 4 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Profile
+                  </a>
+                  <a href="{% url 'projects' %}" class="dropdown-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                      <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                      <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                      <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    My Projects
+                  </a>
+                  <a href="{% url 'library' %}" class="dropdown-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+                      <circle cx="14" cy="6" r="1.5" fill="currentColor"/>
+                      <path d="M4 14L7 10L10 12L13 9L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Library
+                  </a>
+                  <div class="dropdown-divider"></div>
+                  <a href="{% url 'help_center' %}" class="dropdown-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Help Center
+                  </a>
+                  <div class="dropdown-divider"></div>
+                  <a href="{% url 'switch_account' %}" class="dropdown-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <polyline points="10,17 15,12 10,7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <line x1="15" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Switch Account
+                  </a>
+                  <a href="{% url 'logout' %}" class="dropdown-item logout-item">
+                    Logout
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search and Filter Section -->
+      <div class="search-section">
+        <div class="search-container">
+          <div class="search-wrapper">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+              <path d="M21 21L16.514 16.506L21 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <form class="projects-search-form" method="get" action="">
+              <input class="projects-search-input" type="text" name="q" placeholder="Search templates..." value="{{ request.GET.q|default:'' }}">
+              <button class="projects-search-btn" type="submit">Search</button>
+            </form>
+          </div>
+          <div class="filter-actions">
+              <div class="filter-dropdown">
+                <button class="filter-btn" id="filter-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 3H2L10 12.46V19L14 21V12.46L22 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Filter
+                  <svg class="filter-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <div class="filter-menu" id="filter-menu">
+                  <div class="filter-section">
+                    <div class="filter-section-title">Sort by Date</div>
+                    <a href="?sort=latest" class="filter-option">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 8V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+                      Latest - Oldest
+                    </a>
+                    <a href="?sort=oldest" class="filter-option">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 8V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+                      Oldest - Latest
+                    </a>
+                  </div>
+                  <div class="filter-divider"></div>
+                  <div class="filter-section">
+                    <div class="filter-section-title">Sort by Popularity</div>
+                    <a href="{% url 'library' %}" class="filter-option">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+                      Most Views 
+                      <span style="margin-left: auto; font-size: 0.65rem; color: #fff; background: #f7b500; padding: 1px 4px; border-radius: 3px; font-weight: 700; letter-spacing: 0.02em;">PRO</span>
+                    </a>
+                    <a href="{% url 'library' %}" class="filter-option">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M23 6L13.5 15.5L8.5 10.5L1 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M17 6H23V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      Trending Now
+                      <span style="margin-left: auto; font-size: 0.65rem; color: #fff; background: #f7b500; padding: 1px 4px; border-radius: 3px; font-weight: 700; letter-spacing: 0.02em;">PRO</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            <div class="template-count">
+              {{ pens|length }} templates
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-gallery"> 
+
+    {% for pen in postPage %}
+
+        <div class="template-card" onclick="incrementViewAndNavigate({{ pen.id }})" data-pen-id="{{ pen.id }}" style="cursor: pointer;">
+          <div class="preview-container">
+                      <iframe
+              class="preview-frame"
+              srcdoc="<style>html,body{margin:0;padding:0;overflow:hidden;}</style>{{ pen.html_code }}<style>{{ pen.css_code }}</style><script>{{ pen.js_code }}</script>"
+              title="Template Preview"
+              loading="lazy"
+              allowfullscreen
+              style="pointer-events: none;transform:scale(0.3);transform-origin:top left;width:333%;height:333%;"
+            ></iframe>
+          </div>
+          <div class="template-info">
+            <div class="template-title">{{ pen.title|default:"Untitled Template" }}</div>
+            <div class="template-actions">
+              <div class="view-counter" title="Views">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="view-count">{{ pen.views }}</span>
+              </div>
+              
+              <button class="like-btn" data-template-id="{{ pen.id }}" title="Like">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            
+              <a href="{% url 'edit_pen' pen.id %}" class="edit-btn" title="Edit Template">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+
+
+
+
+
+
+
+
+              
+            </div>
+          </div>
+        </div>
+    {% endfor %}
+
+  
+  {% if search_q and not postPage %}
+  <div class="no-results">
+    <div class="no-results-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem;">
+        <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="#232323" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h3 class="no-results-title">No templates found</h3>
+    <p class="no-results-message">We couldn't find any templates matching "{{ search_q }}". </p>
+    <a href="{% url 'main' %}" class="no-results-button">View All Templates</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Pagination -->
+</div>
+  </div>
+</div>
+<div class="pagination-container">
+  {% if postPage.has_previous %}
+    <a href="?page={{ postPage.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="pagination-btn prev-btn">
+      <span>← Previous</span>
+    </a>
+  {% endif %}
+  
+  <div class="pagination-info">
+    Page {{ postPage.number }} of {{ postPage.paginator.num_pages }}
+  </div>
+  
+  {% if postPage.has_next %}
+    <a href="?page={{ postPage.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="pagination-btn next-btn">
+      <span>Next →</span>
+    </a>
+  {% endif %}
+</div>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .layout-root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+  }
+  .page-flex {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+    background: #fff;
+  }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 190px;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #fff;
+    z-index: 10;
+    border-right: 1.5px solid #eee;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar::-webkit-scrollbar {
+    width: 8px;
+    background: #f7f7f7;
+  }
+  .sidebar::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 6px;
+  }
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+  }
+
+
+
+
+
+  .sidebar-bottom {
+    margin-top: auto;
+    width: 100%;
+    padding-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+    background: #fff;
+  }
+
+  .sidebar-divider {
+    width: 70%;
+    height: 1px;
+    background: #eee;
+    margin: 1.2rem 0 0.7rem 0;
+    border: none;
+  }
+
+  .sidebar-logout {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    padding: 8px 0;
+    width: 75%;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.97rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s, border 0.18s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    text-decoration: none;
+  }
+
+  .sidebar-logout:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+    box-shadow: 0 2px 8px rgba(34,34,34,0.10);
+  }
+
+  .sidebar-logout .logout-icon {
+    font-size: 1.15em;
+    vertical-align: middle;
+    color: #111;
+    transition: color 0.18s;
+  }
+
+  .sidebar-logout:hover .logout-icon {
+    color: #fff;
+  }
+
+  .sidebar-help {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    border-radius: 0;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    text-decoration: none;
+    outline: none;
+  }
+
+  .sidebar-help:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+  }
+
+  .sidebar-logo {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #111;
+    letter-spacing: 0.12em;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  .sidebar-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 0.7rem;
+  }
+
+  .sidebar-btn {
+    background: #fff;
+    color: #111;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    width: 85%;
+    text-align: left;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.02em;
+    transition: color 0.2s, transform 0.18s;
+    cursor: pointer;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+    padding-left: 8%;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-left: 20px;
+    text-decoration: none !important;
+  }
+
+  .sidebar-btn.active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 10px;
+    box-shadow: none;
+    text-decoration: none !important;
+  }
+
+  .sidebar-btn::before {
+    display: none;
+  }
+
+  .sidebar-btn:hover, .sidebar-btn.active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 6px;
+    text-decoration: none !important;
+    box-shadow: none;
+    transform: none;
+    transition: background 0.18s, color 0.18s;
+  }
+
+  .sidebar-btn span {
+    position: relative;
+    z-index: 1;
+  }
+
+  .sidebar-actions-row {
+    display: flex;
+    gap: 1rem;
+    margin-right: 3px;
+    margin-top: 0.5rem;
+  }
+
+  .sidebar-home, .sidebar-help, .sidebar-logout-icon {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    text-decoration: none;
+    outline: none;
+  }
+
+  .sidebar-home, .sidebar-help, .sidebar-logout-icon {
+    gap: 2rem;
+  }
+
+  .sidebar-home:hover, .sidebar-help:hover, .sidebar-logout-icon:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+  }
+
+  .sidebar-home:hover svg, .sidebar-logout-icon:hover svg {
+    stroke: #fff;
+  }
+
+  .sidebar-help {
+    border-radius: 0;
+  }
+
+  .sidebar-logout-icon {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    border-radius: 0;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    text-decoration: none;
+    outline: none;
+  }
+
+  .sidebar-logout-icon:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+  }
+
+  .sidebar-logout-icon svg {
+    stroke: #111;
+    transition: none;
+  }
+
+  .sidebar-logout-icon:hover svg {
+    stroke: #111;
+  }
+
+  .sidebar-extra-section {
+    margin-top: 1.5rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+
+  .sidebar-extra-section .sidebar-btn {
+    align-items: flex-start;
+    text-align: left;
+    justify-content: flex-start;
+    padding-left: 8%;
+    margin-left: 20px;
+  }
+
+  .sidebar-section-label {
+    font-size: 0.92rem;
+    color: #888;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    margin-top: -5px;
+  }
+
+  .sidebar-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+    margin-top: 0.7rem;
+    align-items: flex-start;
+    width: 100%;
+    padding-left: 0;
+  }
+
+  .create-btn-small {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    padding: 7px 20px;
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: none;
+    box-shadow: none;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    min-width: 70px;
+  }
+
+  .create-btn-small:hover {
+    background: #111;
+    color: #fff;
+  }
+
+  .sidebar-tool-btn {
+    background: #fff;
+    color: #111;
+    border: none;
+    border-radius: 6px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.95rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    color: #111;
+    cursor: pointer;
+    padding: 8px 0 8px 8%;
+    transition: none;
+    box-shadow: none;
+    width: 85%;
+    justify-content: flex-start;
+    margin-left: 20px;
+    text-align: left;
+    text-decoration: none !important;
+  }
+
+  .sidebar-tool-btn .icon {
+    font-size: 1.15rem;
+    margin-right: 0.7rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .sidebar-tool-btn:hover, .sidebar-tool-btn:active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 10px;
+    box-shadow: none;
+    text-decoration: none !important;
+    padding-left: 8%;
+    margin-left: 20px;
+    width: 85%;
+    text-align: left;
+  }
+  /* Match hover style to .sidebar-btn.active */
+  .sidebar-tool-btn:hover, .sidebar-tool-btn:active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 6px;
+    box-shadow: none;
+    text-decoration: none !important;
+  }
+
+  .main-content {
+    flex: 1 1 0;
+    min-width: 0;
+    background: #fff;
+    min-height: 100%;
+    margin-left: 180px;
+    padding: 0;
+  }
+
+
+
+  /* ===== PROFESSIONAL TOP BAR ===== */
+  .top-bar {
+    background: #ffffff;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 0;
+    position: relative;
+    z-index: 50;
+    margin-left: 1.3rem;
+  }
+
+  .top-bar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .top-bar-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #666666;
+  }
+
+  .breadcrumb-item {
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  .breadcrumb-item.active {
+    color: #1a1a1a;
+    font-weight: 600;
+  }
+
+  .breadcrumb-separator {
+    color: #cccccc;
+    font-weight: 300;
+  }
+
+  .page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+  }
+
+  .top-bar-right {
+    display: flex;
+    align-items: center;
+  }
+
+  .top-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .view-toggle {
+    display: flex;
+    align-items: center;
+    background: #f8f8f8;
+    border-radius: 8px;
+    padding: 0.25rem;
+    border: 1px solid #e5e5e5;
+  }
+
+  .view-btn {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #666666;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .view-btn.active {
+    background: #ffffff;
+    color: #1a1a1a;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .view-btn:hover:not(.active) {
+    color: #1a1a1a;
+    background: rgba(255,255,255,0.5);
+  }
+
+  .user-menu {
+    position: relative;
+  }
+
+  .user-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #f8f8f8;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #1a1a1a;
+  }
+
+  .user-menu-btn:hover {
+    background: #f0f0f0;
+    border-color: #d0d0d0;
+  }
+
+  .user-avatar {
+    width: 24px;
+    height: 24px;
+    background: #1a1a1a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+  }
+
+  .user-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .dropdown-arrow {
+    color: #666666;
+    transition: transform 0.2s ease;
+  }
+
+  .user-menu-btn:hover .dropdown-arrow {
+    transform: rotate(180deg);
+  }
+
+  /* User Dropdown Menu Styles */
+  .user-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 280px;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    margin-top: 8px;
+    backdrop-filter: blur(10px);
+  }
+
+  .user-dropdown-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .dropdown-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .dropdown-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .dropdown-avatar {
+    width: 40px;
+    height: 40px;
+    background: #1a1a1a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    flex-shrink: 0;
+  }
+
+  .dropdown-user-details {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dropdown-username {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dropdown-email {
+    font-size: 0.8rem;
+    color: #666666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dropdown-divider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 0.5rem 0;
+  }
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 1.25rem;
+    color: #1a1a1a;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .dropdown-item svg {
+    color: #666666;
+  }
+
+  .logout-item {
+    color: #dc3545;
+  }
+
+  /* ===== SEARCH SECTION ===== */
+  .search-section {
+    background: #ffffff;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 1.5rem 2rem;
+  }
+
+  .search-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    gap: 2rem;
+  }
+
+  .search-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: 500px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999999;
+    z-index: 1;
+  }
+
+  .filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .filter-dropdown {
+    position: relative;
+  }
+
+  .filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .filter-btn:hover {
+    background: #f8f8f8;
+    border-color: #d0d0d0;
+  }
+
+  .filter-arrow {
+    color: #666666;
+    transition: transform 0.2s ease;
+  }
+
+  .filter-dropdown.active .filter-arrow {
+    transform: rotate(180deg);
+  }
+
+  .filter-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 220px;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    margin-top: 8px;
+    backdrop-filter: blur(10px);
+  }
+
+  .filter-dropdown.active .filter-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .filter-section {
+    padding: 0.75rem 0;
+  }
+
+  .filter-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #666666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 1rem 0.5rem 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .filter-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    color: #1a1a1a;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background 0.2s ease;
+  }
+
+  .filter-option:hover {
+    background: #f8f8f8;
+  }
+
+  .filter-option svg {
+    color: #666666;
+  }
+
+  .filter-divider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 0.5rem 0;
+  }
+
+  .template-count {
+    font-size: 0.875rem;
+    color: #666666;
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    background: #f8f8f8;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
+  }
+
+  /* Gallery spacing adjustment */
+  .preview-gallery {
+    margin-top: 2rem;
+  }
+
+  .projects-search-form {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .projects-search-input {
+    padding: 0.875rem 1rem 0.875rem 2.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    width: 100%;
+    background: #fafafa;
+    transition: all 0.2s ease;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .projects-search-input:focus {
+    outline: none;
+    border-color: #1a1a1a;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(26,26,26,0.08);
+  }
+
+  .projects-search-btn {
+    padding: 0.875rem 1.5rem;
+    background: #1a1a1a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Montserrat', sans-serif;
+    margin-left: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .projects-search-btn:hover {
+    background: #000000;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+
+  /* Navigation Styles */
+  .sq-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background: transparent;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .logo {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #232323;
+    letter-spacing: 0.1em;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .nav-auth {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  /* Dropdown Styles */
+  .nav-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .nav-dropdown-btn {
+    background: transparent;
+    border: none;
+    color: #232323;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .nav-dropdown-btn:hover {
+    color: #000;
+    transform: translateY(-1px);
+  }
+
+  .nav-dropdown-btn::after {
+    content: '▼';
+    font-size: 0.6rem;
+    margin-left: 0.5rem;
+    transition: transform 0.3s ease;
+  }
+
+  .nav-dropdown.active .nav-dropdown-btn::after {
+    transform: rotate(180deg);
+  }
+
+  .nav-dropdown-content {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: #fff;
+    min-width: 200px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    border-radius: 12px;
+    padding: 1rem 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .nav-dropdown.active .nav-dropdown-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .dropdown-item {
+    display: block;
+    padding: 0.8rem 1.5rem;
+   
+    text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+  }
+
+
+  .dropdown-item:hover::before {
+    width: 100%;
+  }
+
+  .sq-nav-getstarted {
+    background: #232323;
+    color: #fff;
+    text-decoration: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sq-nav-getstarted::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .sq-nav-getstarted:hover::before {
+    left: 100%;
+  }
+
+  .sq-nav-getstarted:hover {
+    background: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  }
+
+  .preview-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem;
+  justify-content: flex-start;
+  margin-top: 60px;
+  margin-left: 34px !important;
+}
+
+.template-card {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  width: 402px;  /* Change card width */
+  height: 277px; /* Change card height */
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
+}
+
+.template-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+
+
+.preview-container {
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  position: relative;
+}
+
+.preview-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+  .template-info {
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  position: relative;
+  top: -173px;
+  margin-top: 10.5rem !important;
+}
+  
+  .template-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  .fork-btn, .edit-btn {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: #666666;
+    transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+  
+  .fork-btn:hover {
+    color: #1976d2;
+  }
+  
+  .edit-btn:hover {
+    color: #4caf50;
+  }
+
+.template-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+  flex: 1;
+}
+
+.like-btn {
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #666666;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.like-btn:hover {
+  color: #e74c3c;
+}
+
+.like-btn.liked {
+  color: #e74c3c;
+}
+
+.like-btn.liked svg {
+  fill: #e74c3c;
+}
+
+.view-counter {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #666666;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+}
+
+.view-counter:hover {
+  color: #007bff;
+}
+
+.view-counter svg {
+  width: 16px;
+  height: 16px;
+}
+
+.view-count {
+  min-width: 1rem;
+  text-align: center;
+}
+
+.preview-frame {
+  /* Upsize so scaling down to 55% still fills 400×250 */
+  width: calc(400px / 0.60);   /* ≈727.27px */
+  height: calc(250px / 0.60);  /* ≈454.55px */
+  
+  border: none;
+  transform: scale(0.60);      /* Shrink to 55% */
+  transform-origin: top left;
+  transition: all 0.3s ease;
+  display: block;
+}
+
+.preview-frame-container:hover .preview-frame {
+  transform: scale(0.60) translateY(-8px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+
+.no-results {
+  position: relative;
+  left: 25rem;
+  text-align: center;
+  padding: 2rem 1rem;
+  margin: 2rem auto;
+}
+
+.no-results-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #232323;
+  margin-bottom: 0.5rem;
+}
+
+.no-results-message {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.no-results-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #fff;
+  color: #232323;
+  text-decoration: none;
+  border: 2px solid #232323;
+  border-radius: 4px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.no-results-button:hover {
+  background: #232323;
+  color: #fff;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  background: #fff;
+  color: #232323;
+  text-decoration: none;
+  border: 2px solid #232323;
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.pagination-btn:hover {
+  background: #232323;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.pagination-info {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1300px) {
+  .preview-gallery {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+  
+  .preview-frame-container {
+    max-width: 320px;
+    height: 240px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .preview-gallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .preview-gallery {
+    grid-template-columns: 1fr;
+    margin: 1rem;
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .sidebar {
+    display: none;
+  }
+  
+  .page-flex {
+    flex-direction: column;
+  }
+  
+  .top-nav-container {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .top-nav-left {
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  
+  .nav-menu {
+    gap: 1rem;
+  }
+  
+  .nav-actions {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .top-bar-container {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .search-container {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .search-wrapper {
+    max-width: none;
+  }
+  
+  .filter-actions {
+    justify-content: space-between;
+  }
+  
+  .projects-search-form {
+    width: 100%;
+  }
+  
+  .projects-search-input {
+    flex: 1;
+    min-width: auto;
+  }
+}
+</style>
+
+<footer style="background: #111; color: #fff; padding: 36px 0 0 0; margin-top: 48px;">
+  <div style="max-width: 1300px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: flex-start; gap: 0 32px;">
+    <div style="flex: 0 0 180px; min-width: 140px; margin-bottom: 32px; display: flex; align-items: flex-start;">
+      <span style="font-size: 2.7rem; font-weight: 900; font-family: 'Montserrat', 'Inter', Arial, sans-serif; letter-spacing: 0.08em; color: #fff;">STUDIO</span>
+    </div>
+    <div style="flex: 1 1 0; display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 0 20px; margin-left: 250px;">
+      <div style="flex: 1 1 180px; min-width: 160px; margin-bottom: 32px; text-align: left;">
+        <div style="font-size: 0.98rem; font-weight: 600; font-family: 'Montserrat', 'Inter', Arial, sans-serif; letter-spacing: 0.04em; margin-bottom: 18px; color: #fff;">Industries</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Healthcare</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Sports</div>
+        <div style="color: #bbb; margin-bottom: 10px;">ECommerce</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Construction</div>
+        <div style="color: #bbb;">Club</div>
+      </div>
+      <div style="flex: 1 1 180px; min-width: 160px; margin-bottom: 32px; text-align: left;">
+        <div style="font-size: 0.98rem; font-weight: 600; font-family: 'Montserrat', 'Inter', Arial, sans-serif; letter-spacing: 0.04em; margin-bottom: 18px; color: #fff;">Quick Links</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Reviews</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Terms & Condition</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Disclaimer</div>
+        <div style="color: #bbb;">Site Map</div>
+      </div>
+      <div style="flex: 1 1 340px; min-width: 260px; margin-bottom: 10px;">
+        <div style="margin-bottom: 18px; font-size: 0.98rem; font-weight: 600; font-family: 'Montserrat', 'Inter', Arial, sans-serif; letter-spacing: 0.04em; color: #fff;">Customer Support</div>
+        <div class="custom-onboarding-form" style="background: none; box-shadow: none; border-radius: 0; padding: 0; margin: 0;">
+          <div style="color: #bbb; font-size: 0.98rem; margin-bottom: 14px;">
+            Our support team is available 24/7. If you have questions, please leave your message below.
+          </div>
+          <style>
+            /* Overlay background */
+            .overlay {
+              position: fixed;
+              inset: 0;
+              background: rgba(0, 0, 0, 0.4);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              z-index: 9998;
+              opacity: 0;
+              visibility: hidden;
+              transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+          
+            /* Show animation */
+            .overlay.show {
+              opacity: 1;
+              visibility: visible;
+            }
+          
+            /* Card styling */
+            .message-card {
+              background: #fff;
+              color: #333;
+              font-family: "Segoe UI", sans-serif;
+              padding: 1.5rem 2rem;
+              border-radius: 12px;
+              max-width: 400px;
+              width: 90%;
+              box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+              text-align: center;
+              transform: translateY(-15px);
+              transition: transform 0.3s ease;
+            }
+          
+            /* Card slide-in effect */
+            .overlay.show .message-card {
+              transform: translateY(0);
+            }
+          
+            .message-card h2 {
+              font-size: 1.2rem;
+              margin-bottom: 0.75rem;
+              font-weight: 600;
+            }
+          
+            .message-card p {
+              font-size: 0.95rem;
+              margin: 0.5rem 0;
+              color: #555;
+            }
+          
+            .close-btn {
+              margin-top: 1rem;
+              background: #000;
+              color: #fff;
+              border: none;
+              padding: 0.6rem 1.2rem;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 0.9rem;
+              transition: background 0.2s;
+            }
+          
+            .close-btn:hover {
+              background: #333;
+            }
+          
+            /* Custom input styles (white theme) */
+            .custom-input {
+              margin-bottom: 0;
+              border-bottom: 2px solid #fff;
+              background: transparent;
+              color: #fff;
+              font-size: 1.05rem;
+              padding: 7px 0;
+              width: 90%;
+              max-width: 260px;
+              outline: none;
+            }
+          
+            .custom-send-btn {
+              background: transparent;
+              border: none;
+              color: #fff;
+              font-size: 1.2rem;
+              cursor: pointer;
+              padding: 0 0 0 8px;
+              display: flex;
+              margin-right: 16px;
+              margin-top: 11px;
+            }
+          </style>
+          
+          <!-- Help Center Form -->
+          <form method="post" id="helpForm" action="{% url 'help_center' %}" style="width: 100%; display: flex; align-items: center; position: relative;">
+            {% csrf_token %}
+            <input class="custom-input" type="text" name="support_query" placeholder="Type your message here..." id="helpInput" />
+            <button class="custom-send-btn" type="submit" style="position: relative; bottom: 17px;">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+          
+          <!-- Overlay and Card -->
+          <div class="overlay" id="messageOverlay">
+            <div class="message-card">
+              <h2>Please go to Help Center</h2>
+              <p id="searchResult"></p>
+              <button class="close-btn" onclick="closeMessage()">Close</button>
+              <p style="position: relative; top: 4px;">
+                  Visit our <a href="{% url 'help_center' %}" style="color: black;">Help Center</a> to share complete details about your issue.
+              
+              </p>
+            </div>
+          </div>
+          
+          <script>
+            const overlay = document.getElementById("messageOverlay");
+            const helpInput = document.getElementById("helpInput");
+            const searchResult = document.getElementById("searchResult");
+          
+            function showMessage() {
+              const query = helpInput.value.trim();
+              searchResult.textContent = query ? `You wrote: "${query}"` : "";
+              overlay.classList.add("show");
+            }
+          
+            function closeMessage() {
+              overlay.classList.remove("show");
+            }
+          
+            // Form submission trigger
+            document.getElementById("helpForm").addEventListener("submit", function(e) {
+              e.preventDefault(); // prevent actual form submission for demo
+              showMessage();
+            });
+          
+            // Close when clicking outside
+            overlay.addEventListener("click", function(e) {
+              if (e.target === overlay) {
+                closeMessage();
+              }
+            });
+          </script>
+        </div>
+        <div style="margin-top: 24px;">
+          <div style="color: #bbb; font-size: 0.98rem; display: flex; align-items: center;">
+            <i class="fas fa-question-circle" style="margin-right: 10px; color: #bbb;"></i>
+            <a href="/faq" style="color: #bbb; font-weight: 500; text-decoration: none;">Visit our FAQ</a>
+          </div>
+        </div>
+        <style>
+          .custom-onboarding-form { width: 100%; max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; align-items: flex-start; background: none; }
+          .custom-input { width: 90%; max-width: 260px; font-size: 1.05rem; border: none; border-bottom: 2px solid #fff; outline: none; padding: 7px 0; margin-bottom: 32px; background: transparent; color: #fff; transition: border-color 0.2s; }
+          .custom-input:focus { border-bottom: 2.5px solid #fff; }
+          .custom-input::placeholder { color: #fff; opacity: 1; }
+          .custom-btn-row { width: 100%; display: flex; flex-direction: row; gap: 8px; justify-content: flex-end; }
+          .custom-ok-btn { width: auto; min-width: 48px; align-self: flex-end; padding: 7px 16px; background: #fff; color: #111; font-size: 0.98rem; font-family: inherit; font-weight: 500; border: 2px solid #111; border-radius: 0; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: background 0.22s, color 0.22s, box-shadow 0.18s, transform 0.18s, opacity 0.3s; display: flex; align-items: center; justify-content: center; letter-spacing: 0.04em; }
+          .custom-ok-btn:hover, .custom-ok-btn:active { background: #111; color: #fff; box-shadow: 0 4px 16px rgba(34,34,34,0.13); transform: translateY(-2px) scale(1.04); }
+        </style>
+      </div>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: center; align-items: center; gap: 18px; margin: 32px 0 0 0;">
+    <a href="#" class="footer-social-circle" style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 2px solid #bbb; color: #bbb; font-size: 1.3rem; transition: border 0.2s, color 0.2s; text-decoration: none;">
+      <i class="fab fa-instagram"></i>
+    </a>
+    <a href="#" class="footer-social-circle" style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 2px solid #bbb; color: #bbb; font-size: 1.3rem; transition: border 0.2s, color 0.2s; text-decoration: none;">
+      <i class="fab fa-tiktok"></i>
+    </a>
+  </div>
+  <div style="text-align: center; color: #bbb; font-size: 0.97rem; margin-top: 24px; padding-bottom: 18px;">&copy; 2025 Studio. All rights reserved.</div>
+</footer>
+<script>
+  // Function to increment view count and navigate to pen
+  function incrementViewAndNavigate(penId) {
+    // Increment view count via AJAX
+    fetch(`/increment_view/${penId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Update the view count display
+        const viewCounter = document.querySelector(`[data-pen-id="${penId}"] .view-count`);
+        if (viewCounter) {
+          viewCounter.textContent = data.views;
+        }
+      }
+    })
+    .catch(error => {
+      console.error('Error incrementing view:', error);
+    })
+    .finally(() => {
+      // Navigate to the pen regardless of view increment success
+      window.location.href = `/edit/${penId}/`;
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // User dropdown functionality
+    const userMenuBtn = document.getElementById('user-menu-btn');
+    const userDropdownMenu = document.getElementById('user-dropdown-menu');
+    const dropdownArrow = userMenuBtn.querySelector('.dropdown-arrow');
+
+    if (userMenuBtn && userDropdownMenu) {
+      userMenuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isActive = userDropdownMenu.classList.contains('active');
+        
+        // Toggle dropdown
+        if (isActive) {
+          userDropdownMenu.classList.remove('active');
+          dropdownArrow.style.transform = 'rotate(0deg)';
+        } else {
+          userDropdownMenu.classList.add('active');
+          dropdownArrow.style.transform = 'rotate(180deg)';
+        }
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!userMenuBtn.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+          userDropdownMenu.classList.remove('active');
+          dropdownArrow.style.transform = 'rotate(0deg)';
+        }
+      });
+
+      // Close dropdown when pressing Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          userDropdownMenu.classList.remove('active');
+          dropdownArrow.style.transform = 'rotate(0deg)';
+        }
+      });
+    }
+
+    // Dropdown functionality
+    document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const dropdown = this.closest('.nav-dropdown');
+        const isActive = dropdown.classList.contains('active');
+        
+        // Close all other dropdowns
+        document.querySelectorAll('.nav-dropdown').forEach(function(d) {
+          d.classList.remove('active');
+        });
+        
+        // Toggle current dropdown
+        if (!isActive) {
+          dropdown.classList.add('active');
+        }
+      });
+    });
+    
+    
+    // Filter dropdown functionality
+    const filterBtn = document.getElementById('filter-btn');
+    const filterMenu = document.getElementById('filter-menu');
+    const filterDropdown = document.querySelector('.filter-dropdown');
+    const filterArrow = filterBtn.querySelector('.filter-arrow');
+
+    if (filterBtn && filterMenu) {
+      filterBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isActive = filterDropdown.classList.contains('active');
+        
+        // Toggle dropdown
+        if (isActive) {
+          filterDropdown.classList.remove('active');
+          filterArrow.style.transform = 'rotate(0deg)';
+        } else {
+          filterDropdown.classList.add('active');
+          filterArrow.style.transform = 'rotate(180deg)';
+        }
+      });
+
+      // Close filter dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!filterBtn.contains(e.target) && !filterMenu.contains(e.target)) {
+          filterDropdown.classList.remove('active');
+          filterArrow.style.transform = 'rotate(0deg)';
+        }
+      });
+
+      // Close filter dropdown when pressing Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          filterDropdown.classList.remove('active');
+          filterArrow.style.transform = 'rotate(0deg)';
+        }
+      });
+    }
+
+    // Template card actions functionality
+    document.querySelectorAll('.like-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.toggle('liked');
+        
+        // Add animation effect
+        if (this.classList.contains('liked')) {
+          this.style.transform = 'scale(1.2)';
+          setTimeout(() => {
+            this.style.transform = 'scale(1)';
+          }, 200);
+        }
+      });
+    });
+
+    document.querySelectorAll('.bookmark-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.toggle('bookmarked');
+        
+        // Add animation effect
+        if (this.classList.contains('bookmarked')) {
+          this.style.transform = 'scale(1.2)';
+          setTimeout(() => {
+            this.style.transform = 'scale(1)';
+          }, 200);
+        }
+      });
+    });
+
+    document.querySelectorAll('.share-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Add animation effect
+        this.style.transform = 'scale(1.2)';
+        setTimeout(() => {
+          this.style.transform = 'scale(1)';
+        }, 200);
+        
+        // Here you can add share functionality
+        // For now, just show a simple alert
+        alert('Share functionality coming soon!');
+      });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-dropdown')) {
+        document.querySelectorAll('.nav-dropdown').forEach(function(dropdown) {
+          dropdown.classList.remove('active');
+        });
+      }
+    });
+
+    // Preview frame functionality
+    document.querySelectorAll('.preview-frame').forEach(function(iframe) {
+      let scrollTimeout;
+      iframe.addEventListener('mouseenter', function() {
+        clearTimeout(scrollTimeout);
+        // Scroll to the bottom of the content
+        iframe.contentWindow?.scrollTo({ top: iframe.contentDocument?.body?.scrollHeight || 2000, behavior: 'smooth' });
+      });
+      iframe.addEventListener('mouseleave', function() {
+        clearTimeout(scrollTimeout);
+        // Scroll back to top
+        iframe.contentWindow?.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      // For touch devices
+      iframe.addEventListener('touchstart', function() {
+        clearTimeout(scrollTimeout);
+        iframe.contentWindow?.scrollTo({ top: iframe.contentDocument?.body?.scrollHeight || 2000, behavior: 'smooth' });
+      });
+      iframe.addEventListener('touchend', function() {
+        clearTimeout(scrollTimeout);
+        iframe.contentWindow?.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    // Sidebar footer adjustment (exactly like projects.html)
+    var sidebar = document.querySelector('.sidebar');
+    var footer = document.querySelector('footer');
+    var sidebarInitialLeft = sidebar.getBoundingClientRect().left;
+    var sidebarInitialWidth = sidebar.offsetWidth;
+
+    function adjustSidebar() {
+      var sidebarHeight = sidebar.offsetHeight;
+      var footerRect = footer.getBoundingClientRect();
+      var sidebarRect = sidebar.getBoundingClientRect();
+      var scrollY = window.scrollY;
+      var footerTop = footerRect.top + scrollY;
+      var sidebarTop = sidebarRect.top + scrollY;
+      var stopPoint = footerTop - sidebarHeight;
+
+      if (scrollY > stopPoint - sidebarInitialLeft) {
+        // Sidebar would overlap footer, so set absolute just above footer
+        sidebar.style.position = 'absolute';
+        sidebar.style.top = (stopPoint) + 'px';
+        sidebar.style.left = sidebarInitialLeft + 'px';
+        sidebar.style.width = sidebarInitialWidth + 'px';
+      } else {
+        // Sidebar is fixed
+        sidebar.style.position = 'fixed';
+        sidebar.style.top = '0px';
+        sidebar.style.left = sidebarInitialLeft + 'px';
+        sidebar.style.width = sidebarInitialWidth + 'px';
+      }
+    }
+
+    window.addEventListener('scroll', adjustSidebar);
+    window.addEventListener('resize', adjustSidebar);
+    adjustSidebar();
+
+  });
+
+  // Search button functionality
+  var searchBtn = document.getElementById('search-btn');
+  var searchModal = document.getElementById('search-modal');
+  if (searchBtn && searchModal) {
+    searchModal.style.display = 'none'; // Ensure hidden on load
+    searchBtn.addEventListener('click', function() {
+      searchModal.style.display = 'flex';
+      searchModal.classList.add('show');
+    });
+  }
+</script>
+
+<!-- Premium Search Features Modal -->
+<div id="search-modal" class="modal-card">
+  <div class="modal-content">
+    <button class="close-modal" onclick="closeSearchModal()">&times;</button>
+    <div class="premium-features-content">
+      <div class="premium-header">
+        <div class="premium-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#f7b500" stroke-width="2" fill="#fff8e1"/>
+          </svg>
+        </div>
+        <h3>Premium Search Features</h3>
+        <p>Unlock advanced search capabilities with Studio Pro</p>
+      </div>
+      <div class="premium-features-list">
+        <div class="feature-item">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="#111" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="feature-text">
+            <h4>Global Search</h4>
+            <p>Search across all templates and components</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#111" stroke-width="2"/>
+              <path d="M2 17L12 22L22 17" stroke="#111" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="feature-text">
+            <h4>Advanced Filters</h4>
+            <p>Filter by category, technology, and complexity</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#111" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="feature-text">
+            <h4>Smart Suggestions</h4>
+            <p>AI-powered search suggestions and recommendations</p>
+          </div>
+        </div>
+      </div>
+      <div class="premium-cta">
+        <button class="upgrade-btn" onclick="showUpgradeModal()">
+          <span>Upgrade to Pro</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upgrade Modal -->
+<div id="upgrade-modal" class="modal-card">
+  <div class="modal-content">
+    <button class="close-modal" onclick="closeUpgradeModal()">&times;</button>
+    <h3>Upgrade to Pro</h3>
+    <p>We are working on that. Please check back soon!</p>
+    <p class="contact-info">For updates on our development progress, please <a href="{% url 'help_center' %}" class="contact-link"><strong>contact us</strong></a>.</p>
+  </div>
+</div>
+
+<script>
+function closeSearchModal() {
+  var searchModal = document.getElementById('search-modal');
+  if (searchModal) {
+    searchModal.classList.remove('show');
+    setTimeout(() => {
+      searchModal.style.display = 'none';
+    }, 250);
+  }
+}
+
+function showUpgradeModal() {
+  var upgradeModal = document.getElementById('upgrade-modal');
+  if (upgradeModal) {
+    upgradeModal.style.display = 'block';
+    setTimeout(() => {
+      upgradeModal.classList.add('show');
+    }, 10);
+  }
+}
+
+function closeUpgradeModal() {
+  var upgradeModal = document.getElementById('upgrade-modal');
+  if (upgradeModal) {
+    upgradeModal.classList.remove('show');
+    setTimeout(() => {
+      upgradeModal.style.display = 'none';
+    }, 250);
+  }
+}
+</script>
+{% endblock %}

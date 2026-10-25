@@ -1,0 +1,1560 @@
+{% extends "app/base.html" %}
+{% block title %}Library - STUDIO{% endblock %}
+
+{% block body %}
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .layout-root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+  }
+  .page-flex {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+    background: #fff;
+  }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 190px;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #fff;
+    z-index: 10;
+    border-right: 1.5px solid #eee;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar::-webkit-scrollbar {
+    width: 8px;
+    background: #f7f7f7;
+  }
+  .sidebar::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 6px;
+  }
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+  }
+  .sidebar-bottom {
+    margin-top: auto;
+    width: 100%;
+    padding-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+    background: #fff;
+  }
+  .sidebar-divider {
+    width: 70%;
+    height: 1px;
+    background: #eee;
+    margin: 1.2rem 0 0.7rem 0;
+    border: none;
+  }
+  .sidebar-logout {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    padding: 8px 0;
+    width: 75%;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.97rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s, border 0.18s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    text-decoration: none;
+  }
+  .sidebar-logout:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+    box-shadow: 0 2px 8px rgba(34,34,34,0.10);
+  }
+  .sidebar-logout .logout-icon {
+    font-size: 1.15em;
+    vertical-align: middle;
+    color: #111;
+    transition: color 0.18s;
+  }
+  .sidebar-logout:hover .logout-icon {
+    color: #fff;
+  }
+  .sidebar-help {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    border-radius: 0;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    text-decoration: none;
+    outline: none;
+  }
+  .sidebar-help:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+  }
+  .sidebar-logo {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #111;
+    letter-spacing: 0.12em;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    margin-top: 2rem;
+  }
+  .sidebar-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 0.7rem;
+  }
+  .sidebar-btn {
+    background: #fff;
+    color: #111;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    width: 85%;
+    text-align: left;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.02em;
+    transition: color 0.2s, transform 0.18s;
+    cursor: pointer;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+    padding-left: 8%;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-left: 20px;
+    text-decoration: none !important;
+  }
+  .sidebar-btn.active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 10px;
+    box-shadow: none;
+    text-decoration: none !important;
+  }
+  .sidebar-btn::before {
+    display: none;
+  }
+  .sidebar-btn:hover, .sidebar-btn.active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 6px;
+    text-decoration: none !important;
+    box-shadow: none;
+    transform: none;
+    transition: background 0.18s, color 0.18s;
+  }
+  .sidebar-btn span {
+    position: relative;
+    z-index: 1;
+  }
+  .main-content {
+    flex: 1 1 0;
+    min-width: 0;
+    background: #fff;
+    min-height: 100%;
+    margin-left: 190px;
+    padding: 0;
+  }
+  .sidebar-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+    margin-top: 0.7rem;
+    align-items: flex-start;
+    width: 100%;
+    padding-left: 0;
+  }
+  .create-btn-small {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    padding: 7px 20px;
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: none;
+    box-shadow: none;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    min-width: 70px;
+  }
+  .create-btn-small:hover {
+    background: #111;
+    color: #fff;
+  }
+  .sidebar-tool-btn {
+    background: #fff;
+    color: #111;
+    border: none;
+    border-radius: 6px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.95rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    color: #111;
+    cursor: pointer;
+    padding: 8px 0 8px 8%;
+    transition: none;
+    box-shadow: none;
+    width: 85%;
+    justify-content: flex-start;
+    margin-left: 20px;
+    text-align: left;
+    text-decoration: none !important;
+  }
+  .sidebar-tool-btn .icon {
+    font-size: 1.15rem;
+    margin-right: 0.7rem;
+    display: flex;
+    align-items: center;
+  }
+  .sidebar-tool-btn:hover, .sidebar-tool-btn:active {
+    background: #f3f3f3;
+    color: #111;
+    border-radius: 10px;
+    box-shadow: none;
+    text-decoration: none !important;
+    padding-left: 8%;
+    margin-left: 20px;
+    width: 85%;
+    text-align: left;
+  }
+  .sidebar-extra-section {
+    margin-top: 1.5rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+  .sidebar-extra-section .sidebar-btn {
+    align-items: flex-start;
+    text-align: left;
+    justify-content: flex-start;
+    padding-left: 8%;
+    margin-left: 20px;
+  }
+  .sidebar-section-label {
+    font-size: 0.92rem;
+    color: #888;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    margin-top: -5px;
+  }
+  .sidebar-actions-row {
+    display: flex;
+    gap: 1rem;
+    margin-right: 3px;
+    margin-top: 0.5rem;
+  }
+  .sidebar-home, .sidebar-help, .sidebar-logout-icon {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    text-decoration: none;
+    outline: none;
+  }
+  .sidebar-home:hover, .sidebar-help:hover, .sidebar-logout-icon:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+  }
+  .sidebar-home:hover svg, .sidebar-logout-icon:hover svg {
+    stroke: #fff;
+  }
+  .sidebar-help {
+    border-radius: 0;
+  }
+  .sidebar-logout-icon {
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    border-radius: 0;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    text-decoration: none;
+    outline: none;
+  }
+  .sidebar-logout-icon:hover {
+    background: #111;
+    color: #fff;
+    border: 2px solid #111;
+  }
+  .sidebar-logout-icon svg {
+    stroke: #111;
+    transition: none;
+  }
+  .sidebar-logout-icon:hover svg {
+    stroke: #111;
+  }
+
+  /* Advice Card Styles */
+  #advice-card {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    color: #111;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    width: 400px;
+    height: 340px;
+    min-width: 0;
+    max-width: 90vw;
+    min-height: 0;
+    max-height: 90vh;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    padding: 1.2rem 1.2rem 1.2rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #111;
+  }
+  #advice-card .close-advice {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    background: none;
+    border: none;
+    color: #111;
+    font-size: 1.3rem;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  #advice-card .close-advice:hover {
+    color: #e00;
+  }
+  #logout-modal {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s cubic-bezier(.4,0,.2,1), visibility 0.25s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background: #fff;
+    color: #111;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    width: 340px;
+    min-width: 0;
+    max-width: 90vw;
+    min-height: 0;
+    max-height: 90vh;
+    text-align: center;
+    font-family: 'Montserrat',sans-serif;
+    padding: 1.2rem;
+    z-index: 99999;
+    border: 1px solid #111;
+  }
+  #logout-modal.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  /* Library Page Styles - Black, White, Elegant Theme */
+  .elegant-hero {
+    background: #fff;
+    padding: 4rem 2.5rem;
+    border-bottom: 1px solid #eee;
+  }
+  .hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 4rem;
+  }
+  .hero-text h1 {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #111;
+    margin: 0 0 1rem 0;
+    letter-spacing: -0.03em;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .hero-subtitle {
+    font-size: 1.3rem;
+    color: #666;
+    margin: 0 0 2.5rem 0;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 3rem;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #111;
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.9rem;
+    color: #888;
+    font-weight: 500;
+    font-family: 'Montserrat', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .hero-video {
+    flex-shrink: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 400px;
+    height: 280px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    border: 1px solid #eee;
+  }
+  .video-frame video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .video-frame:hover .video-overlay {
+    opacity: 1;
+  }
+  .play-btn {
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .play-btn:hover {
+    background: #fff;
+    transform: scale(1.1);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+  }
+  .play-btn svg {
+    width: 28px;
+    height: 28px;
+    fill: #111;
+    margin-left: 2px;
+  }
+
+  /* Premium Features Section */
+  .premium-section {
+    background: #f8f9fa;
+    padding: 5rem 2.5rem;
+  }
+  .section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+  .section-header h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #111;
+    margin: 0 0 1rem 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .section-header p {
+    font-size: 1.1rem;
+    color: #666;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .feature-item {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 2.5rem;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  }
+  .feature-item:hover {
+    border-color: #111;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    transform: translateY(-4px);
+  }
+  .feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+  }
+  .feature-item h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 1rem 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .feature-item p {
+    font-size: 1rem;
+    color: #666;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.6;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .pro-tag {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: #111;
+    color: #fff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  /* Upgrade CTA Section */
+  .upgrade-cta {
+    background: #111;
+    color: #fff;
+    padding: 4rem 2.5rem;
+    text-align: center;
+  }
+  .cta-content {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .cta-content h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 1rem 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .cta-content p {
+    font-size: 1.2rem;
+    color: #ccc;
+    margin: 0 0 2rem 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .primary-cta, .secondary-cta {
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .primary-cta {
+    background: #fff;
+    color: #111;
+    border: none;
+    box-shadow: 0 4px 16px rgba(255,255,255,0.2);
+  }
+  .primary-cta:hover {
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255,255,255,0.3);
+  }
+  .secondary-cta {
+    background: transparent;
+    color: #fff;
+    border: 2px solid #fff;
+  }
+  .secondary-cta:hover {
+    background: #fff;
+    color: #111;
+    transform: translateY(-2px);
+  }
+  .trial-info {
+    font-size: 0.9rem;
+    color: #999;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .elegant-hero {
+      padding: 2rem 1.5rem;
+    }
+    .hero-content {
+      flex-direction: column;
+      text-align: center;
+      gap: 2rem;
+    }
+    .hero-text h1 {
+      font-size: 2.5rem;
+    }
+    .hero-subtitle {
+      font-size: 1.1rem;
+    }
+    .hero-stats {
+      justify-content: center;
+      gap: 2rem;
+    }
+    .video-frame {
+      width: 100%;
+      max-width: 400px;
+      height: 250px;
+    }
+    .premium-section {
+      padding: 3rem 1.5rem;
+    }
+    .section-header h2 {
+      font-size: 2rem;
+    }
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+    .upgrade-cta {
+      padding: 3rem 1.5rem;
+    }
+    .cta-content h2 {
+      font-size: 2rem;
+    }
+    .cta-buttons {
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+  }
+
+  /* Modal Card Styles */
+  .modal-card {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border: 2px solid #111;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    width: 400px;
+    min-width: 0;
+    max-width: 90vw;
+    min-height: 0;
+    max-height: 90vh;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    padding: 1.2rem;
+    z-index: 99999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s cubic-bezier(.4,0,.2,1), visibility 0.25s cubic-bezier(.4,0,.2,1);
+  }
+  .modal-card.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .modal-content {
+    position: relative;
+  }
+  .close-modal {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    background: none;
+    border: none;
+    color: #111;
+    font-size: 1.3rem;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .close-modal:hover {
+    color: #e00;
+  }
+  .modal-content h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 1rem 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .modal-content p {
+    font-size: 1rem;
+    color: #666;
+    margin: 0;
+    line-height: 1.5;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .contact-info {
+    margin-top: 1.5rem !important;
+    font-size: 0.95rem !important;
+    color: #888 !important;
+  }
+  .contact-link {
+    color: #111;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+  }
+  .contact-link:hover {
+    color: #666;
+    text-decoration: underline;
+  }
+  
+  /* Premium Features Modal Styles */
+  .premium-features-content {
+    text-align: center;
+    padding: 0;
+  }
+  .premium-header {
+    margin-bottom: 2rem;
+  }
+  .premium-icon {
+    margin-bottom: 1rem;
+  }
+  .premium-header h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 0.5rem;
+  }
+  .premium-header p {
+    color: #666;
+    font-size: 1rem;
+  }
+  .premium-features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+  }
+  .premium-features-list .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-align: left;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #eee;
+  }
+  .premium-features-list .feature-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #eee;
+  }
+  .premium-features-list .feature-text h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111;
+    margin: 0 0 0.3rem 0;
+  }
+  .premium-features-list .feature-text p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+  }
+  .premium-cta {
+    margin-top: 1.5rem;
+  }
+  .upgrade-btn {
+    background: linear-gradient(90deg, #232323 80%, #444 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+  }
+  .upgrade-btn:hover {
+    background: linear-gradient(90deg, #111 80%, #232323 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(34,34,34,0.13);
+  }
+</style>
+
+<div class="layout-root">
+  <div class="page-flex">
+    <div class="sidebar">
+      <div class="sidebar-logo">STUDIO</div>
+      <div class="sidebar-tools">
+        <a href="{% url 'create' %}" class="create-btn-small" style="text-decoration:none; margin-bottom: 1.2rem; margin-top: 0.5rem;">
+          <span style="font-size:1.1em;">＋</span> Create
+        </a>
+        <a href="{% url 'library' %}" class="sidebar-tool-btn active" style="text-decoration:none;">
+          <span class="icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="16" height="16" rx="2" stroke="#111" stroke-width="2"/>
+              <circle cx="14" cy="6" r="1.5" fill="#111"/>
+              <path d="M4 14L7 10L10 12L13 9L16 14" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          Library
+          <span style="margin-right: 2px; font-size: 0.65rem; color: #fff; background: #f7b500; padding: 1px 4px; border-radius: 3px; font-weight: 700; letter-spacing: 0.02em;">PRO</span>
+        </a>
+        <button class="sidebar-tool-btn" id="search-btn" type="button" style="margin-bottom: 1rem;">
+          <span class="icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="8" r="6" stroke="#111" stroke-width="2"/>
+              <line x1="12" y1="12" x2="16" y2="16" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          Search
+          <span style="margin-right: 2px; font-size: 0.65rem; color: #fff; background: #f7b500; padding: 1px 4px; border-radius: 3px; font-weight: 700; letter-spacing: 0.02em;">PRO</span>
+        </button>
+      </div>
+      <div class="sidebar-section-label" style="position: relative; left: 33px;">Main</div>
+      <div class="sidebar-buttons" style="margin-top: 20px;">
+        <a href="{% url 'projects' %}" class="sidebar-btn"><span>Your Projects</span></a>
+        <a href="{% url 'main' %}" class="sidebar-btn"><span>Home</span></a>
+        <a href="{% url 'profile' %}" class="sidebar-btn"><span>Profile</span></a>
+        <a href="{% url 'settings' %}" class="sidebar-btn"><span>Settings</span></a>
+      </div>
+      <div class="sidebar-extra-section">
+        <div class="sidebar-section-label" style="position: relative; left: 34px; margin-bottom: 15px;">Support</div>
+        <a href="{% url 'help_center' %}" class="sidebar-btn"><span>Help Center</span></a>
+        <a href="https://codingeditor.slack.com/archives/C097C03BCA1" class="sidebar-btn"><span>Community</span></a>
+        <a  href="{% url 'logout' %}" type="button" class="sidebar-btn" id="logout-btn"><span>Logout</span></a>
+      </div>
+      <div class="sidebar-bottom">
+        <hr class="sidebar-divider" />
+        <a class="sidebar-logout" href="{% url 'main' %}" style="width: 148px !important; margin-right: 3px;">Home</a>
+        <div class="sidebar-actions-row">
+          <a class="sidebar-home" title="Home" href="{% url 'main' %}">
+            <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 22L24 8L40 22" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 20V40C10 41.1046 10.8954 42 12 42H36C37.1046 42 38 41.1046 38 40V20" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="18" y="30" width="12" height="12" rx="2" stroke="currentColor" stroke-width="3"/>
+            </svg>
+          </a>
+          <a href="{% url 'index' %}" class="sidebar-logout-icon" id="logout-btn-icon" title="Logout" type="button">
+            <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="8" width="28" height="32" rx="3" stroke="currentColor" stroke-width="3"/>
+              <path d="M14 24H34" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <path d="M28 18L34 24L28 30" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <button class="sidebar-help" id="advice-btn" title="Advice">?</button>
+        </div>
+      </div>
+    </div>
+    <div class="main-content">
+      <!-- Elegant Hero Section -->
+      <div class="elegant-hero">
+        <div class="hero-content">
+          <div class="hero-text">
+            <div class="hero-header">
+              <div class="decorative-line"></div>
+              <h1>Premium Library</h1>
+              <div class="decorative-line"></div>
+            </div>
+            <p class="hero-subtitle">Unlock exclusive templates and components</p>
+            <div class="hero-stats">
+              <div class="stat">
+                <div class="stat-icon">
+                 
+                </div>
+                <span class="stat-number">500+</span>
+                <span class="stat-label">Templates</span>
+              </div>
+              <div class="stat">
+                <div class="stat-icon">
+                  
+                </div>
+                <span class="stat-number">100+</span>
+                <span class="stat-label">Components</span>
+              </div>
+              <div class="stat">
+                
+                <span class="stat-number">24/7</span>
+                <span class="stat-label">Support</span>
+              </div>
+            </div>
+          </div>
+          <div class="hero-video">
+            <div class="video-frame">
+              <div class="video-decoration">
+                <div class="corner-decoration top-left"></div>
+                <div class="corner-decoration top-right"></div>
+                <div class="corner-decoration bottom-left"></div>
+                <div class="corner-decoration bottom-right"></div>
+              </div>
+              <video src="/static/app/video/hi.mp4" muted loop autoplay></video>
+              <div class="video-overlay">
+                <div class="play-btn" onclick="toggleVideo()">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 5V19L19 12L8 5Z" fill="#fff"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Premium Features -->
+      <div class="premium-section">
+        <div class="section-header">
+          <div class="header-decoration">
+            <div class="decorative-dot"></div>
+            <h2>Premium Features</h2>
+            <div class="decorative-dot"></div>
+          </div>
+          <p>Everything you need to build faster and better</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-item">
+            <div class="feature-decoration">
+              <div class="feature-line"></div>
+            </div>
+            <div class="feature-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 17L12 22L22 17" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Premium Templates</h3>
+            <p>Access 500+ professionally designed templates across all industries with advanced customization options.</p>
+            <span class="pro-tag">PRO</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-decoration">
+              <div class="feature-line"></div>
+            </div>
+            <div class="feature-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14 2V8H20" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 13H8" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 17H8" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M10 9H9H8" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Component Library</h3>
+            <p>Reusable UI components with advanced customization options and real-time preview capabilities.</p>
+            <span class="pro-tag">PRO</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-decoration">
+              <div class="feature-line"></div>
+            </div>
+            <div class="feature-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" stroke="#111" stroke-width="2"/>
+                <line x1="8" y1="21" x2="16" y2="21" stroke="#111" stroke-width="2"/>
+                <line x1="12" y1="17" x2="12" y2="21" stroke="#111" stroke-width="2"/>
+                <path d="M6 7H18" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+                <path d="M6 11H18" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+                <path d="M6 15H14" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3>A.I Editor</h3>
+            <p>Advanced AI-powered editor with intelligent code generation and unlimited template access for development.</p>
+            <span class="pro-tag">PRO</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upgrade CTA -->
+      <div class="upgrade-cta">
+        <div class="cta-decoration">
+          <div class="cta-line"></div>
+        </div>
+        <div class="cta-content">
+          <div class="cta-icon" style="margin-bottom: 1rem;"    >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#fff" stroke-width="2"/>
+            </svg>
+          </div>
+          <h2>Ready to Unlock Premium?</h2>
+          <p>Join thousands of developers who have already upgraded to Studio Pro</p>
+          <div class="cta-buttons">
+            <button class="primary-cta" onclick="showUpgradeModal()">
+              <span>Upgrade to Pro</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="secondary-cta" onclick="showTrialModal()">
+              Start Free Trial
+            </button>
+          </div>
+          <p class="trial-info">Cancel anytime • No commitment required</p>
+        </div>
+      </div>
+
+      <!-- Upgrade Modal -->
+      <div id="upgrade-modal" class="modal-card">
+        <div class="modal-content">
+          <button class="close-modal" onclick="closeUpgradeModal()">&times;</button>
+          <h3>Upgrade to Pro</h3>
+          <p>We are working on that. Please check back soon!</p>
+          <p class="contact-info">For updates on our development progress, please <a href="{% url 'help_center' %}" class="contact-link"><strong>contact us</strong></a>.</p>
+        </div>
+      </div>
+
+      <!-- Trial Modal -->
+      <div id="trial-modal" class="modal-card">
+        <div class="modal-content">
+          <button class="close-modal" onclick="closeTrialModal()">&times;</button>
+          <h3>Start Free Trial</h3>
+          <p>We are working on that. Please check back soon!</p>
+          <p class="contact-info">For updates on our development progress, please <a href="{% url 'help_center' %}" class="contact-link"><strong>contact us</strong></a>.</p>
+        </div>
+      </div>
+
+      <!-- Premium Search Features Modal -->
+      <div id="search-modal" class="modal-card">
+        <div class="modal-content">
+          <button class="close-modal" onclick="closeSearchModal()">&times;</button>
+          <div class="premium-features-content">
+            <div class="premium-header">
+              <div class="premium-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#f7b500" stroke-width="2" fill="#fff8e1"/>
+                </svg>
+              </div>
+              <h3>Premium Search Features</h3>
+              <p>Unlock advanced search capabilities with Studio Pro</p>
+            </div>
+            <div class="premium-features-list">
+              <div class="feature-item">
+                <div class="feature-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="#111" stroke-width="2"/>
+                  </svg>
+                </div>
+                <div class="feature-text">
+                  <h4>Global Search</h4>
+                  <p>Search across all templates and components</p>
+                </div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#111" stroke-width="2"/>
+                    <path d="M2 17L12 22L22 17" stroke="#111" stroke-width="2"/>
+                  </svg>
+                </div>
+                <div class="feature-text">
+                  <h4>Advanced Filters</h4>
+                  <p>Filter by category, technology, and complexity</p>
+                </div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#111" stroke-width="2"/>
+                  </svg>
+                </div>
+                <div class="feature-text">
+                  <h4>Smart Suggestions</h4>
+                  <p>AI-powered search suggestions and recommendations</p>
+                </div>
+              </div>
+            </div>
+            <div class="premium-cta">
+              <button class="upgrade-btn" onclick="showUpgradeModal()">
+                <span>Upgrade to Pro</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+<!-- Advice Card Modal -->
+<div id="advice-card">
+  <button class="close-advice" onclick="document.getElementById('advice-card').style.display='none'">&times;</button>
+  <h2 style="margin-bottom: 1rem;">Advice</h2>
+  <ul style="text-align:left; margin: 0 auto 1.2rem auto; padding-left: 1.2em; font-size: 1.05rem; color: #111;">
+    <li><b>Premium Package</b> Helps You Access Every Feature Of VSCode</li>
+    <li>Click On The Templates To See The Code</li>
+    <li>Full Screen Mode Is Available For Coding</li>
+    <li>Ask For Help Or Check Documentation If Stuck.</li>
+  </ul>
+  <div style="font-size: 0.97rem; color: #555;">You're doing great. Keep going!</div>
+</div>
+
+<!-- Logout Confirmation Modal -->
+<div id="logout-modal">
+  <button class="close-logout" onclick="closeLogoutModal()" style="position:absolute; top:12px; right:18px; background:none; border:none; color:#111; font-size:1.3rem; cursor:pointer; font-weight:bold;">&times;</button>
+  <h2 style="margin-bottom: 1rem;">Logout</h2>
+  <div style="font-size: 1.05rem; margin-bottom: 1.2rem;">Are you sure you want to logout?</div>
+  <div style="display:flex; justify-content:center; gap:1.2rem;">
+    <button onclick="closeLogoutModal()" style="background:#fff; color:#111; border:2px solid #111; border-radius:6px; padding:8px 22px; font-size:1rem; font-family:'Montserrat',sans-serif; font-weight:600; cursor:pointer;">Cancel</button>
+    <a href="{% url 'logout' %}" style="background:#111; color:#fff; border:2px solid #111; border-radius:6px; padding:8px 22px; font-size:1rem; font-family:'Montserrat',sans-serif; font-weight:600; text-decoration:none; cursor:pointer; display:inline-block;">Logout</a>
+  </div>
+</div>
+
+<script>
+function closeLogoutModal() {
+  var logoutModal = document.getElementById('logout-modal');
+  if (logoutModal) {
+    logoutModal.classList.remove('show');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var adviceBtn = document.getElementById('advice-btn');
+  var adviceCard = document.getElementById('advice-card');
+  if (adviceBtn && adviceCard) {
+    adviceBtn.addEventListener('click', function() {
+      adviceCard.style.display = 'block';
+    });
+  }
+  // Hide advice card on page load
+  if (adviceCard) adviceCard.style.display = 'none';
+
+  // Logout modal logic
+  var logoutBtn = document.getElementById('logout-btn');
+  var logoutBtnIcon = document.getElementById('logout-btn-icon');
+  var logoutModal = document.getElementById('logout-modal');
+  if (logoutBtn && logoutModal) {
+    logoutBtn.addEventListener('click', function() {
+      logoutModal.classList.add('show');
+    });
+  }
+  if (logoutBtnIcon && logoutModal) {
+    logoutBtnIcon.addEventListener('click', function() {
+      logoutModal.classList.add('show');
+    });
+  }
+
+  // Search button functionality
+  var searchBtn = document.getElementById('search-btn');
+  var searchModal = document.getElementById('search-modal');
+  if (searchBtn && searchModal) {
+    searchModal.style.display = 'none'; // Ensure hidden on load
+    searchBtn.addEventListener('click', function() {
+      searchModal.style.display = 'flex';
+      searchModal.classList.add('show');
+    });
+  }
+
+  var sidebar = document.querySelector('.sidebar');
+  var footer = document.querySelector('footer');
+  var sidebarInitialLeft = sidebar.getBoundingClientRect().left;
+  var sidebarInitialWidth = sidebar.offsetWidth;
+
+  function adjustSidebar() {
+    var sidebarHeight = sidebar.offsetHeight;
+    var footerRect = footer.getBoundingClientRect();
+    var sidebarRect = sidebar.getBoundingClientRect();
+    var scrollY = window.scrollY;
+    var footerTop = footerRect.top + scrollY;
+    var sidebarTop = sidebarRect.top + scrollY;
+    var stopPoint = footerTop - sidebarHeight;
+
+    if (scrollY > stopPoint - sidebarInitialLeft) {
+      // Sidebar would overlap footer, so set absolute just above footer
+      sidebar.style.position = 'absolute';
+      sidebar.style.top = (stopPoint) + 'px';
+      sidebar.style.left = sidebarInitialLeft + 'px';
+      sidebar.style.width = sidebarInitialWidth + 'px';
+    } else {
+      // Sidebar is fixed
+      sidebar.style.position = 'fixed';
+      sidebar.style.top = '0px';
+      sidebar.style.left = sidebarInitialLeft + 'px';
+      sidebar.style.width = sidebarInitialWidth + 'px';
+    }
+  }
+
+  window.addEventListener('scroll', adjustSidebar);
+  window.addEventListener('resize', adjustSidebar);
+  adjustSidebar();
+});
+
+function showUpgradeModal() {
+  var upgradeModal = document.getElementById('upgrade-modal');
+  if (upgradeModal) {
+    upgradeModal.style.display = 'block';
+    setTimeout(() => {
+      upgradeModal.classList.add('show');
+    }, 10);
+  }
+}
+
+function showTrialModal() {
+  var trialModal = document.getElementById('trial-modal');
+  if (trialModal) {
+    trialModal.style.display = 'block';
+    setTimeout(() => {
+      trialModal.classList.add('show');
+    }, 10);
+  }
+}
+
+function closeUpgradeModal() {
+  var upgradeModal = document.getElementById('upgrade-modal');
+  if (upgradeModal) {
+    upgradeModal.classList.remove('show');
+    setTimeout(() => {
+      upgradeModal.style.display = 'none';
+    }, 250);
+  }
+}
+
+function closeTrialModal() {
+  var trialModal = document.getElementById('trial-modal');
+  if (trialModal) {
+    trialModal.classList.remove('show');
+    setTimeout(() => {
+      trialModal.style.display = 'none';
+    }, 250);
+  }
+}
+
+function closeSearchModal() {
+  var searchModal = document.getElementById('search-modal');
+  if (searchModal) {
+    searchModal.classList.remove('show');
+    setTimeout(() => {
+      searchModal.style.display = 'none';
+    }, 250);
+  }
+}
+
+function toggleVideo() {
+  const video = document.querySelector('.video-container video');
+  const overlay = document.querySelector('.video-overlay');
+  
+  if (video.paused) {
+    video.play();
+    overlay.style.opacity = '0';
+  } else {
+    video.pause();
+    overlay.style.opacity = '1';
+  }
+}
+</script>
+
+
+
+<footer style="background: #111; color: #fff; padding: 36px 0 0 0; margin-top: 0px;">
+  <div style="max-width: 1300px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: flex-start; gap: 0 32px;">
+    <div style="flex: 0 0 180px; min-width: 140px; margin-bottom: 32px; display: flex; align-items: flex-start;">
+      <span style="font-size: 2.7rem; font-weight: 900; font-family: 'Montserrat', 'Inter', Arial, sans-serif; letter-spacing: 0.08em; color: #fff;">STUDIO</span>
+    </div>
+    <div style="flex: 1 1 0; display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 0 20px; margin-left: 250px;">
+      <div style="flex: 1 1 180px; min-width: 160px; margin-bottom: 32px; text-align: left;">
+        <div style="font-size: 0.98rem; font-weight: 600; font-family: 'Montserrat', 'Inter', Arial, sans-serif; letter-spacing: 0.04em; margin-bottom: 18px; color: #fff;">Industries</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Healthcare</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Sports</div>
+        <div style="color: #bbb; margin-bottom: 10px;">ECommerce</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Construction</div>
+        <div style="color: #bbb;">Club</div>
+      </div>
+      <div style="flex: 1 1 180px; min-width: 160px; margin-bottom: 32px; text-align: left;">
+        <div style="font-size: 0.98rem; font-weight: 600; font-family: 'Montserrat', 'Inter', Arial, sans-serif; letter-spacing: 0.04em; margin-bottom: 18px; color: #fff;">Quick Links</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Reviews</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Terms & Condition</div>
+        <div style="color: #bbb; margin-bottom: 10px;">Disclaimer</div>
+        <div style="color: #bbb;">Site Map</div>
+      </div>
+      <div style="flex: 1 1 340px; min-width: 260px; margin-bottom: 10px;">
+        <div style="margin-bottom: 18px; font-size: 0.98rem; font-weight: 600; font-family: 'Montserrat', 'Inter', Arial, sans-serif; letter-spacing: 0.04em; color: #fff;">Customer Support</div>
+        <div class="custom-onboarding-form" style="background: none; box-shadow: none; border-radius: 0; padding: 0; margin: 0;">
+          <div style="color: #bbb; font-size: 0.98rem; margin-bottom: 14px;">
+            Our support team is available 24/7. If you have questions, please leave your message below.
+          </div>
+          <style>
+            /* Overlay background */
+            .overlay {
+              position: fixed;
+              inset: 0;
+              background: rgba(0, 0, 0, 0.4);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              z-index: 9998;
+              opacity: 0;
+              visibility: hidden;
+              transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+          
+            /* Show animation */
+            .overlay.show {
+              opacity: 1;
+              visibility: visible;
+            }
+          
+            /* Card styling */
+            .message-card {
+              background: #fff;
+              color: #333;
+              font-family: "Segoe UI", sans-serif;
+              padding: 1.5rem 2rem;
+              border-radius: 12px;
+              max-width: 400px;
+              width: 90%;
+              box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+              text-align: center;
+              transform: translateY(-15px);
+              transition: transform 0.3s ease;
+            }
+          
+            /* Card slide-in effect */
+            .overlay.show .message-card {
+              transform: translateY(0);
+            }
+          
+            .message-card h2 {
+              font-size: 1.2rem;
+              margin-bottom: 0.75rem;
+              font-weight: 600;
+            }
+          
+            .message-card p {
+              font-size: 0.95rem;
+              margin: 0.5rem 0;
+              color: #555;
+            }
+          
+            .close-btn {
+              margin-top: 1rem;
+              background: #000;
+              color: #fff;
+              border: none;
+              padding: 0.6rem 1.2rem;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 0.9rem;
+              transition: background 0.2s;
+            }
+          
+            .close-btn:hover {
+              background: #333;
+            }
+          
+            /* Custom input styles (white theme) */
+            .custom-input {
+              margin-bottom: 0;
+              border-bottom: 2px solid #fff;
+              background: transparent;
+              color: #fff;
+              font-size: 1.05rem;
+              padding: 7px 0;
+              width: 90%;
+              max-width: 260px;
+              outline: none;
+            }
+          
+            .custom-send-btn {
+              background: transparent;
+              border: none;
+              color: #fff;
+              font-size: 1.2rem;
+              cursor: pointer;
+              padding: 0 0 0 8px;
+              display: flex;
+              margin-right: 16px;
+              margin-top: 11px;
+            }
+          </style>
+          
+          <!-- Help Center Form -->
+          <form method="post" id="helpForm" action="{% url 'help_center' %}" style="width: 100%; display: flex; align-items: center; position: relative;">
+            {% csrf_token %}
+            <input class="custom-input" type="text" name="support_query" placeholder="Type your message here..." id="helpInput" />
+            <button class="custom-send-btn" type="submit" style="position: relative; bottom: 17px;">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+          
+          <!-- Overlay and Card -->
+          <div class="overlay" id="messageOverlay">
+            <div class="message-card">
+              <h2>Please go to Help Center</h2>
+              <p id="searchResult"></p>
+              <button class="close-btn" onclick="closeMessage()">Close</button>
+              <p style="position: relative; top: 4px;">
+                  Visit our <a href="{% url 'help_center' %}" style="color: black;">Help Center</a> to share complete details about your issue.
+              
+              </p>
+            </div>
+          </div>
+          
+          <script>
+            const overlay = document.getElementById("messageOverlay");
+            const helpInput = document.getElementById("helpInput");
+            const searchResult = document.getElementById("searchResult");
+          
+            function showMessage() {
+              const query = helpInput.value.trim();
+              searchResult.textContent = query ? `You wrote: "${query}"` : "";
+              overlay.classList.add("show");
+            }
+          
+            function closeMessage() {
+              overlay.classList.remove("show");
+            }
+          
+            // Form submission trigger
+            document.getElementById("helpForm").addEventListener("submit", function(e) {
+              e.preventDefault(); // prevent actual form submission for demo
+              showMessage();
+            });
+          
+            // Close when clicking outside
+            overlay.addEventListener("click", function(e) {
+              if (e.target === overlay) {
+                closeMessage();
+              }
+            });
+          </script>
+        </div>
+        <div style="margin-top: 24px;">
+          <div style="color: #bbb; font-size: 0.98rem; display: flex; align-items: center;">
+            <i class="fas fa-question-circle" style="margin-right: 10px; color: #bbb;"></i>
+            <a href="/faq" style="color: #bbb; font-weight: 500; text-decoration: none;">Visit our FAQ</a>
+          </div>
+        </div>
+        <style>
+          .custom-onboarding-form { width: 100%; max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; align-items: flex-start; background: none; }
+          .custom-input { width: 90%; max-width: 260px; font-size: 1.05rem; border: none; border-bottom: 2px solid #fff; outline: none; padding: 7px 0; margin-bottom: 32px; background: transparent; color: #fff; transition: border-color 0.2s; }
+          .custom-input:focus { border-bottom: 2.5px solid #fff; }
+          .custom-input::placeholder { color: #fff; opacity: 1; }
+          .custom-btn-row { width: 100%; display: flex; flex-direction: row; gap: 8px; justify-content: flex-end; }
+          .custom-ok-btn { width: auto; min-width: 48px; align-self: flex-end; padding: 7px 16px; background: #fff; color: #111; font-size: 0.98rem; font-family: inherit; font-weight: 500; border: 2px solid #111; border-radius: 0; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: background 0.22s, color 0.22s, box-shadow 0.18s, transform 0.18s, opacity 0.3s; display: flex; align-items: center; justify-content: center; letter-spacing: 0.04em; }
+          .custom-ok-btn:hover, .custom-ok-btn:active { background: #111; color: #fff; box-shadow: 0 4px 16px rgba(34,34,34,0.13); transform: translateY(-2px) scale(1.04); }
+        </style>
+      </div>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: center; align-items: center; gap: 18px; margin: 32px 0 0 0;">
+    <a href="#" class="footer-social-circle" style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 2px solid #bbb; color: #bbb; font-size: 1.3rem; transition: border 0.2s, color 0.2s; text-decoration: none;">
+      <i class="fab fa-instagram"></i>
+    </a>
+    <a href="#" class="footer-social-circle" style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 2px solid #bbb; color: #bbb; font-size: 1.3rem; transition: border 0.2s, color 0.2s; text-decoration: none;">
+      <i class="fab fa-tiktok"></i>
+    </a>
+  </div>
+  <div style="text-align: center; color: #bbb; font-size: 0.97rem; margin-top: 24px; padding-bottom: 18px;">&copy; 2025 Studio. All rights reserved.</div>
+</footer>
+{% endblock %}
